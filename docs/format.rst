@@ -48,27 +48,26 @@ Otherwise, each line must be one of a:
     * Crew
     * Sector
 
-To minimise typing while still remaining human readable, context carries
-forwards (e.g. a Date applies to all Duties and Sectors until another Date
-replaces it) and the most common options are specified by omission.
-
-As an example, a couple of days of a Captain's flying, including both optional
-crew and duty records, might look like this: ::
+To minimise typing, context carries forwards — Dates and Aircraft apply to all
+Duties and Sectors until replaced, and there are short forms for Dates and
+Sectors where information is inferred from previous entries. A lot of
+information is also only specified in more uncommon cases. As an example, a
+minimal couple of days of a Captain's flying might look like: ::
 
     2024-01-23
-    1000/1500
-    {FO:Bloggs, PU:Smith}
     G-ABCD:A320
-    BRS/BFS 1100/1200  # Bird strike
-    / 1330/1430
-    # A general comment about the day
-
+    BRS/BFS 1100/1200
+    / 1330/1430 m
+    / EDI 1500/1600 m
+    / 1630/1730 n:30 ln
     +
-    1100/1545
-    {FO:Jones, PU:McDonald}
     G-EFGH:A321
-    BRS/CDG 1200/1315
+    1100/1545
+    BRS/CDG 1200/1315 m
     / 1400/1515
+
+Tools are available to expand the short forms if you prefer to type short forms
+but have the more readable long forms in your journal.
 
 Date
 ----
@@ -213,7 +212,8 @@ minutes, the above sector would be written: ::
 Landing overrides
 ~~~~~~~~~~~~~~~~~
 
-The landing override flags are ``ld`` for day landings and ``ln`` for night
+The landing override flags are ``m`` for pilot monitoring (i.e. do not record
+landings as not pilot flying), ``ld`` for day landings and ``ln`` for night
 landings. To specify multiple landings use a colon followed by an integer, i.e.
 ``ld:3`` means three day landings. ``ld`` is equivalent to ``ld:1`` and ``ln``
 is equivalent to ``ln:1``. Both flags may be specified. ``ld:2 ln`` means two
@@ -235,9 +235,10 @@ To specify that you were not involved in the landing, use either ``ld:0`` or
 Examples: ::
 
   EMA/EMA 1000/1100  # 1 day landing assumed
+  EMA/EMA 1000/1100 m  # PM: No landing to be recorded
   EMA/EMA 2200/2300 n  # 1 night landing assumed
   EMA/FNC 0600/0900 n:60  # 1 day landing assumed
-  FNC/EMA 1800/2100 n:120 ln  # 1 night landing (must be specified)
+  FNC/EMA 1800/2100 n:120 ln  # 1 night landing (ln must be specified)
   EMA/EMA 1000/1100 put ld:5  # 5 training circuits
   EMA/EMA 2100/2300 n:60 ld:5 ln:4  # 5 day circuits then 4 night circuits
   EMA/EMA 1000/1300 ins ld:10  # 10 day landings as instructor

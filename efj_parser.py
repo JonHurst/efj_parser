@@ -253,6 +253,10 @@ def _process_landings(
     re_night = re.compile(r"\Aln(:\d+)?\Z")
     unused = []
     for f in flags:
+        if f == "m":
+            night_ldg, day_ldg = 0, 0
+            found_landing_flag = True
+            break
         if mo := re_day.match(f):
             day_ldg = int(mo.group(1)[1:]) if mo.group(1) else 1
             found_landing_flag = True

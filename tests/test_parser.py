@@ -286,10 +286,18 @@ class TestSectorFlags (unittest.TestCase):
             self.assertEqual(
                 efj._process_landings((), 1, 0),
                 (efj.Landings(day=1, night=0), ()))
+        with self.subTest("PM, day"):
+            self.assertEqual(
+                efj._process_landings(("m",), 1, 0),
+                (efj.Landings(day=0, night=0), ()))
         with self.subTest("No flags, night"):
             self.assertEqual(
                 efj._process_landings((), 1, 1),
                 (efj.Landings(day=0, night=1), ()))
+        with self.subTest("PM, night"):
+            self.assertEqual(
+                efj._process_landings(("m",), 1, 1),
+                (efj.Landings(day=0, night=0), ()))
         with self.subTest("Partial night, day landing"):
             self.assertEqual(
                 efj._process_landings((), 2, 1),
