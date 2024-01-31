@@ -173,8 +173,11 @@ class Parser():
             duration += 1440
         conditions, unused_flags = _process_conditions(flags, duration)
         roles, unused_flags = _process_roles(unused_flags, duration)
-        landings, unused_flags = _process_landings(unused_flags, duration,
-                                                   conditions.night)
+        if roles.p2 == duration:
+            landings = Landings()
+        else:
+            landings, unused_flags = _process_landings(unused_flags, duration,
+                                                       conditions.night)
         aircraft_class, unused_flags = _process_class_override(unused_flags)
         if roles.p1 == duration:
             self.captain = "Self"

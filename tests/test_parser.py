@@ -112,7 +112,7 @@ G-EFGH:321
                 dt.datetime(2024, 1, 21, 13), 60,
                 efj.Roles(p2=60),
                 efj.Conditions(ifr=60),
-                efj.Landings(day=1),
+                efj.Landings(),
                 efj.Aircraft("G-ABCD", "320"),
                 efj.Airports("BFS", "BRS"),
                 "Bloggs Joe", (), "",
@@ -121,7 +121,7 @@ G-EFGH:321
                 dt.datetime(2024, 1, 24, 11), 120,
                 efj.Roles(p2=120),
                 efj.Conditions(ifr=120),
-                efj.Landings(day=1),
+                efj.Landings(),
                 efj.Aircraft("G-EFGH", "321"),
                 efj.Airports("BRS", "NCE"),
                 "Pugwash", (), "", (
