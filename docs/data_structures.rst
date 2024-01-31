@@ -9,47 +9,47 @@ Data Structures
 Duties
 ------
 
-.. autoclass:: freeform.Duty
+.. autoclass:: efj_parser.Duty
    :members:
 
 Sectors
 -------
 
-.. autoclass:: freeform.Sector
+.. autoclass:: efj_parser.Sector
    :members:
 
 Crewmembers
 -----------
 
-.. autoclass:: freeform.Crewmember
+.. autoclass:: efj_parser.Crewmember
    :members:
 
 Roles
 -----
 
-.. autoclass:: freeform.Roles
+.. autoclass:: efj_parser.Roles
    :members:
 
 Conditions
 ----------
 
-.. autoclass:: freeform.Conditions
+.. autoclass:: efj_parser.Conditions
    :members:
 
 Landings
 --------
 
-.. autoclass:: freeform.Landings
+.. autoclass:: efj_parser.Landings
    :members:
 
 Airports
 --------
 
-.. autoclass:: freeform.Airports
+.. autoclass:: efj_parser.Airports
    :members:
 
 Aircraft
 --------
 
-.. autoclass:: freeform.Aircraft
+.. autoclass:: efj_parser.Aircraft
    :members:

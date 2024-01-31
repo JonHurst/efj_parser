@@ -1,5 +1,5 @@
 Parser
 ======
 
-.. autoclass:: freeform.Parser
+.. autoclass:: efj_parser.Parser
    :members:
