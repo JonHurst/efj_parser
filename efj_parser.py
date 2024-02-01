@@ -1,5 +1,5 @@
 import re
-from typing import NamedTuple, Optional, cast
+from typing import NamedTuple, Optional, Callable, Union, cast
 import datetime as dt
 
 
@@ -76,6 +76,10 @@ class _VE(Exception):
     def __init__(self, message): self.message = message
 
 
+ParseRet = Union[dt.date, Duty, Aircraft, list[Crewmember], Sector, str]
+ParseHook = Optional[Callable[[str, int, str, ParseRet], None]]
+
+
 class Parser():
     """Parser for Electronic Flight Journal files."""
     def __init__(self) -> None:
@@ -85,16 +89,18 @@ class Parser():
         self.captain = ""
         self.crewlist: list[Crewmember] = []
 
-    def __parse_date(self, mo: re.Match) -> None:
+    def __parse_date(self, mo: re.Match) -> dt.date:
         try:
             self.date = dt.datetime.strptime(mo.group(1), "%Y-%m-%d")
+            return self.date
         except ValueError:
             raise _VE("Incorrect Date entry")
 
-    def __parse_nextdate(self, mo: re.Match) -> None:
+    def __parse_nextdate(self, mo: re.Match) -> dt.date:
         if not self.date:
             raise _VE("Nextdate entry without preceding Date entry")
         self.date += dt.timedelta(len(mo.group(1)))
+        return self.date
 
     def __parse_duty(self, mo: re.Match) -> Duty:
         if not self.date:
@@ -121,15 +127,16 @@ class Parser():
         return Duty(dt_start, duration, ftl_correction,
                     tuple(unused_flags), comment)
 
-    def __parse_aircraft(self, mo: re.Match) -> None:
+    def __parse_aircraft(self, mo: re.Match) -> Aircraft:
         self.aircraft = Aircraft(mo.group(1).strip(), mo.group(2).strip())
+        return self.aircraft
 
-    def __parse_crewlist(self, mo: re.Match) -> None:
+    def __parse_crewlist(self, mo: re.Match) -> list[Crewmember]:
         self.crewlist = []
         try:
             crew = mo.group(1).strip()
             if not crew:
-                return
+                return []
             for role, name in [X.strip().split(":", 1)
                                for X in crew.split(",")]:
                 role = role.strip()
@@ -144,6 +151,7 @@ class Parser():
         captains = [X.name for X in self.crewlist if X.role == "CP"]
         if captains:
             self.captain = ", ".join(captains)
+        return self.crewlist
 
     def __pre_validate_sector(self, mo: re.Match) -> None:
         if not self.date:
@@ -202,10 +210,14 @@ class Parser():
             comment,
             tuple(self.crewlist))
 
+    def __parse_comment(self, mo: re.Match) -> str:
+        return mo.group(1) or ""
+
     def __invalid_syntax(self, mo: re.Match) -> None:
         raise _VE("Bad syntax")
 
-    def parse(self, s: str) -> tuple[tuple[Duty, ...], tuple[Sector, ...]]:
+    def parse(self, s: str, hook: ParseHook = None
+              ) -> tuple[tuple[Duty, ...], tuple[Sector, ...]]:
         """Extract duties and sectors from an EFJ string
 
         :param s: A string containing data in EFJ format
@@ -215,33 +227,41 @@ class Parser():
         duties: list[Duty] = []
         sectors: list[Sector] = []
         func_map = [
-            (re.compile(r"\A(\d{4}-\d{2}-\d{2})\Z"), self.__parse_date),
-            (re.compile(r"\A\s*(\++)\s*\Z"), self.__parse_nextdate),
+            (re.compile(r"\A#(.*)\Z"),
+             self.__parse_comment, "comment"),
+            (re.compile(r"\A(\d{4}-\d{2}-\d{2})\Z"),
+             self.__parse_date, "date"),
+            (re.compile(r"\A\s*(\++)\s*\Z"),
+             self.__parse_nextdate, "short_date"),
             (re.compile(r"\A(\d{4})/(\d{4})([^#]*)(#.+)?\Z"),
-             self.__parse_duty),
+             self.__parse_duty, "duty"),
             (re.compile(r"(\w{1,2}-\w{3,5})\s*:\s*([-\w]+)"),
-             self.__parse_aircraft),
-            (re.compile(r"\{([^}]*)}\Z"), self.__parse_crewlist),
+             self.__parse_aircraft, "aircraft"),
+            (re.compile(r"\{([^}]*)}\Z"),
+             self.__parse_crewlist, "crewlist"),
             (re.compile(r"(\w+)?/(\w+)?\s*(\d{4})/(\d{4})([^#]*)?(#.+)?"),
-             self.__parse_sector),
-            (re.compile(r".+"), self.__invalid_syntax),
+             self.__parse_sector, "sector"),
+            (re.compile(r".+"),
+             self.__invalid_syntax, "invalid"),
         ]
         for c, line in enumerate(s.splitlines()):
             line = line.strip()
-            if not line or line[0] == "#":
+            if not line:
+                hook and hook(line, c, 'blank', "")
                 continue
-            for rexp, func in func_map:
-                mo = rexp.match(line)
-                if mo:
+            ret = None
+            for rexp, func, entry_type in func_map:
+                if mo := rexp.match(line):
                     try:
                         ret = func(mo)
                     except _VE as e:
                         raise ValidationError(c, e.message, mo.group(0))
-                    if isinstance(ret, Duty):
-                        duties.append(ret)
-                    elif isinstance(ret, Sector):
-                        sectors.append(ret)
+                    hook and hook(line, c, entry_type, cast(ParseRet, ret))
                     break
+            if isinstance(ret, Duty):
+                duties.append(ret)
+            elif isinstance(ret, Sector):
+                sectors.append(ret)
         return (tuple(duties), tuple(sectors))
 
 
