@@ -2,19 +2,19 @@
 
 source venv/bin/activate
 
-pycodestyle efj_parser.py tests
+pycodestyle efj_parser tests
 if [ $? -ne "0" ]
 then
     exit 1
 fi
 
-mypy efj_parser.py tests
+mypy efj_parser tests
 if [ $? -ne "0" ]
 then
     exit 2
 fi
 
-pyflakes3 efj_parser.py tests
+pyflakes3 efj_parser tests
 if [ $? -ne "0" ]
 then
     exit 3
