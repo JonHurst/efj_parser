@@ -12,7 +12,8 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/JonHurst/efj_parser",
-    py_modules=['efj_parser'],
+    packages=['efj_parser'],
+    package_data={"efj_parser": ["py.typed"]},
     classifiers=[
         "Development Status :: 4 - Beta",
         "Programming Language :: Python :: 3",
