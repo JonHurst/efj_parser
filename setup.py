@@ -4,7 +4,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="efj_parser",
+    name="efj-parser",
     version="0.9",
     author="Jon Hurst",
     author_email="jon.a@hursts.org.uk",
@@ -21,5 +21,5 @@ setuptools.setup(
         "GNU General Public License v3 or later (GPLv3+)",
         "Operating System :: OS Independent",
     ],
-    python_requires='>=3.10',
+    python_requires='>=3.11',
 )
