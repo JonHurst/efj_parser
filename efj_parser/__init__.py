@@ -98,7 +98,7 @@ class Parser():
 
     def __parse_nextdate(self, mo: re.Match) -> dt.date:
         if not self.date:
-            raise _VE("Nextdate entry without preceding Date entry")
+            raise _VE("Short date without preceding Date entry")
         self.date += dt.timedelta(len(mo.group(1)))
         return self.date
 
