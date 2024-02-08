@@ -1,37 +1,48 @@
-Format Description
-==================
+eFJ Format Description
+======================
 
 Overview
 --------
 
-An Electronic Flight Journal (EFJ) is a simple text file within which your
-flying records are stored in a non-tabular form. If you ponder for a minute how
-you might efficiently record your flying records in a pocket diary, you will
-likely come up with a paper based version of the scheme. It is a useful format
-in and of itself, and, using this parser, it is easy to generate other formats,
-including FCL.050 compliant logbooks — I have provided a tool (with a web
-version for those who prefer) that does just this.
+An electronic Flight Journal (eFJ) is a simple text file within which your
+flying records are stored in an intuitive non-tabular form. If you ponder for a
+moment how you might efficiently record your flying records in a pocket diary,
+you will likely come up with a paper based version of the scheme. It is a
+useful, human readable, format in and of itself, plus, using this parser, it is
+easy to generate other formats, including FCL.050 compliant logbooks — I have
+provided a tool (with an `online version <https://hursts.org.uk/efj/>`_ for
+those who prefer) that includes the ability to do just this.
 
-Since an EFJ is just a text file, it can be read and edited with any and all of
-the myriad of text editors that are available on each and every platform. There
-is zero probability that the file will become unusable in the future as a
-result of a tech company losing interest in maintaining a particular bit of
-software.
+Since an eFJ is just a text file, it can be maintained with any of the myriad
+text editors that are available on each and every platform. There is zero
+probability that the file will become unusable in the future as a result of a
+tech company losing interest in maintaining a particular bit of software.
 
-The file size of an EFJ is very small — my 15,000 hours of flying result in an
-uncompressed 365KB file or a compressed 75KB file — which makes it trivial to
-widely distribute copies to insure against loss due to hardware failure.
+A minimal entry for a couple of days of flying by a Captain looks like this: ::
 
-For easyJet pilots there is also a tool (again with an online version) that
-turns a downloaded AIMS roster directly into a set of EFJ entries. This makes
-management of your flight records almost effortless.
+      2024-02-04
+      G-EZBY:A319
+      BRS/GLA 0702/0818 n:18 m
+      GLA/BHX 0848/1037  # Diversion due weather
+      BHX/BRS 1300/1341
 
-Pilots from other airlines that use AIMS for rostering *may* (assuming the
-detailed roster that they can download is sufficiently similar to the easyJet
-version) also find this tool useful, although they will have to manually insert
-the details of the aircraft they were operating. Hopefully, suitably skilled
-pilots at other airlines will be able to fork this tool and provide their
-colleagues with a similarly effortless experience.
+      2024-02-05
+      G-UZHI:A320
+      BRS/FNC 0708/1045 n:6
+      FNC/BRS 1127/1451 m
+
+This should hopefully be pretty self-explanatory, with the exception of the
+``n:18`` flag, which means that 18 minutes of the flight occurred in regulatory
+night time, and the ``m`` which means that the Captain was operating as Pilot
+Monitoring and should not therefore log the landing.
+
+It is straightforward to enter this data manually, and there is assistance for
+this in the form of short forms, such as that the next day in a sequence can be
+represented by a ``+``, and functionality of the above mentioned tool, that
+includes expansion of these short forms and night flying calculations. For
+easyJet pilots there is also a tool (again with `an online version
+<https://hursts.org.uk/aims/>`_) that can extract the majority of this data
+from a downloaded AIMS roster.
 
 
 Top Level Structure
@@ -51,23 +62,10 @@ Otherwise, each line must be one of a:
 To minimise typing, context carries forwards — Dates and Aircraft apply to all
 Duties and Sectors until replaced, and there are short forms for Dates and
 Sectors where information is inferred from previous entries. A lot of
-information is also only specified in more uncommon cases. As an example, a
-minimal couple of days of a Captain's flying might look like: ::
+information is only specified in more uncommon cases; the aim is to make the
+recording of common things easy and the recording of less common things
+possible.
 
-    2024-01-23
-    G-ABCD:A320
-    BRS/BFS 1100/1200
-    / 1330/1430 m
-    / EDI 1500/1600 m
-    / 1630/1730 n:30 ln
-    +
-    G-EFGH:A321
-    1100/1545
-    BRS/CDG 1200/1315 m
-    / 1400/1515
-
-Tools are available to expand the short forms if you prefer to type short forms
-but have the more readable long forms in your journal.
 
 Date
 ----
@@ -80,15 +78,20 @@ or a short form consisting of one or more + characters: ::
 
     ++
 
-In the latter case, the date is moved on one day for each ``+`` — a
-full date must have been specified before this form is used.
+In the latter case, the date is moved on one day for each ``+``, so the example
+expands to ``2024-01-25`` — a full date must have been specified before this
+short form is used.
 
 Duty
 ----
 
-Two UTC times, each consisting of four digits, separated by a forward slash,
-followed by zero or more flags, followed by an optional comment preceded by a
-``#`` character. For example: ::
+Recording of duties is optional. It allows for tracking of FTL cumulative
+totals, but is not mandated by FCL.050.
+
+A duty consists of two UTC times, the beginning and end of the duty, each
+consisting of four digits, separated by a forward slash, followed by zero or
+more flags, followed by an optional comment preceded by a ``#`` character. For
+example: ::
 
     0500/1100 r:30  # ESBY
 
@@ -123,7 +126,8 @@ Crew
 A list of crew in the form **role : name**, separated by commas, with the
 entire group enclosed in curly braces. Only the role ``CP`` has meaning to the
 parser -- other roles such as ``FO``, ``PU`` and ``FA`` may have meaning to
-report generating software. Multiple entries can have the same role.
+report generating software that utilises this parser. Multiple entries can have
+the same role.
 
 For example: ::
 
@@ -212,30 +216,33 @@ minutes, the above sector would be written: ::
 Landing overrides
 ~~~~~~~~~~~~~~~~~
 
-The landing override flags are ``m`` for pilot monitoring (i.e. do not record
-landings as not pilot flying), ``ld`` for day landings and ``ln`` for night
-landings. To specify multiple landings use a colon followed by an integer, i.e.
+The landing override flags are ``m`` for pilot monitoring (i.e. do not log the
+landing as not pilot flying), ``ld`` for a day landing and ``ln`` for a night
+landing. To specify multiple landings use a colon followed by an integer, i.e.
 ``ld:3`` means three day landings. ``ld`` is equivalent to ``ld:1`` and ``ln``
 is equivalent to ``ln:1``. Both flags may be specified. ``ld:2 ln`` means two
 day landings and one night landing.
 
-If, and only if, neither flag is used, a single day landing will be assumed if
-a flight took place entirely in daytime and a single night landing will be
-assumed if a flight took place entirely at nighttime. If only part of the
-flight took place at night, a day landing is assumed. Thus an ``ln`` flag must
-be used if part of a flight took place at night and the landing was a night
-landing.
+If none of these flags are used and the entire flight was operated under a
+``p2`` flag, no landing will be logged.
+
+Otherwise, if none of the flags are used, a single day landing is assumed if a
+flight took place entirely in daytime and a single night landing is assumed if
+a flight took place entirely at night. If only part of the flight took place at
+night, a day landing is assumed. Thus an ``ln`` flag must be used if part of a
+flight took place at night and the landing was a night landing.
 
 No check is made for reasonableness. If an ``ld`` flag is used when the flight
 took place entirely at night, one day landing will still be recorded.
 
-To specify that you were not involved in the landing, use either ``ld:0`` or
-``ln:0`` as you see fit.
+To specify that you were not involved in the landing, use either ``ld:0``,
+``ln:0`` or ``m`` as you see fit.
 
 Examples: ::
 
   EMA/EMA 1000/1100  # 1 day landing assumed
   EMA/EMA 1000/1100 m  # PM: No landing to be recorded
+  EMA/EMA 1000/1100 p2  # P2: No landing to be recorded
   EMA/EMA 2200/2300 n  # 1 night landing assumed
   EMA/FNC 0600/0900 n:60  # 1 day landing assumed
   FNC/EMA 1800/2100 n:120 ln  # 1 night landing (ln must be specified)

@@ -1,6 +1,6 @@
 
-Electronic Flight Journal Parser
-================================
+eFJ Parser
+==========
 
 .. toctree::
    :maxdepth: 3
@@ -10,4 +10,3 @@ Electronic Flight Journal Parser
    parser
    data_structures
    exceptions
-

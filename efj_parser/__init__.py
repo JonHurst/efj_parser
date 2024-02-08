@@ -85,7 +85,7 @@ ParseHook = Optional[Callable[[str, int, str, ParseRet], None]]
 
 
 class Parser():
-    """Parser for Electronic Flight Journal files."""
+    """Parser for electronic Flight Journal (eFJ) files."""
     def __init__(self) -> None:
         self.date: Optional[dt.date] = None
         self.airports = Airports("", "")
@@ -222,11 +222,17 @@ class Parser():
 
     def parse(self, s: str, hook: ParseHook = None
               ) -> tuple[tuple[Duty, ...], tuple[Sector, ...]]:
-        """Extract duties and sectors from an EFJ string
+        """Extract duties and sectors from an eFJ string
 
-        :param s: A string containing data in EFJ format
+        :param s: A string containing data in eFJ format
+        :param hook: A function that, if specified, will be called after each
+            line is processed. The function will be called with the positional
+            parameters line text, line number, line type and parsed object.
+            Line type may be "blank", "comment", "date", "short_date",
+            "aircraft", "crewlist" or "sector".
         :return: Two tuples containing the extracted data. The first is a tuple
             of Duty structures and the second is a tuple of Sector structures.
+
         """
         duties: list[Duty] = []
         sectors: list[Sector] = []

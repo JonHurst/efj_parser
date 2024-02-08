@@ -9,7 +9,7 @@ sys.path.insert(0, os.path.abspath('..'))
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = 'Electronic Flight Journal Parser'
+project = 'eFJ Parser'
 copyright = '2024, Jon Hurst'
 author = 'Jon Hurst'
 release = '0.9'
