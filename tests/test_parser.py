@@ -208,21 +208,21 @@ BRS/BFS 1100/1200 v n:30
                 efj.Parser().parse(data)
             self.assertEqual(
                 str(e.exception),
-                "Line 0: [Incorrect crew listing format] {just a string}")
+                "Line 1: [Incorrect crew listing format] {just a string}")
         with self.subTest("No name"):
             data = "2024-01-22\n{CP:, FO:Bloggs}"
             with self.assertRaises(efj.ValidationError) as e:
                 efj.Parser().parse(data)
             self.assertEqual(
                 str(e.exception),
-                "Line 1: [Incorrect crew listing format] {CP:, FO:Bloggs}")
+                "Line 2: [Incorrect crew listing format] {CP:, FO:Bloggs}")
         with self.subTest("No comma"):
             data = "{ CP: Bloggs1 FO:Bloggs2}"
             with self.assertRaises(efj.ValidationError) as e:
                 efj.Parser().parse(data)
             self.assertEqual(
                 str(e.exception),
-                "Line 0: [Incorrect crew listing format]"
+                "Line 1: [Incorrect crew listing format]"
                 " { CP: Bloggs1 FO:Bloggs2}")
         with self.subTest("No colon"):
             data = "{just a, string}"
@@ -230,14 +230,14 @@ BRS/BFS 1100/1200 v n:30
                 efj.Parser().parse(data)
             self.assertEqual(
                 str(e.exception),
-                "Line 0: [Incorrect crew listing format] {just a, string}")
+                "Line 1: [Incorrect crew listing format] {just a, string}")
         with self.subTest("Multi word role"):
             data = "{just a: string}"
             with self.assertRaises(efj.ValidationError) as e:
                 efj.Parser().parse(data)
             self.assertEqual(
                 str(e.exception),
-                "Line 0: [Incorrect crew listing format] {just a: string}")
+                "Line 1: [Incorrect crew listing format] {just a: string}")
 
     def test_bad_date(self):
         data = "2024-02-30"
@@ -245,7 +245,7 @@ BRS/BFS 1100/1200 v n:30
             efj.Parser().parse(data)
         self.assertEqual(
             str(e.exception),
-            "Line 0: [Incorrect Date entry] 2024-02-30")
+            "Line 1: [Incorrect Date entry] 2024-02-30")
 
     def test_bad_nextdate(self):
         data = "2024-02-01\n++-"
@@ -253,7 +253,7 @@ BRS/BFS 1100/1200 v n:30
             efj.Parser().parse(data)
         self.assertEqual(
             str(e.exception),
-            "Line 1: [Bad syntax] ++-")
+            "Line 2: [Bad syntax] ++-")
 
     def test_bad_duty(self):
         with self.subTest("No preceding date"):
@@ -262,21 +262,21 @@ BRS/BFS 1100/1200 v n:30
                 efj.Parser().parse(data)
             self.assertEqual(
                 str(e.exception),
-                "Line 0: [Duty entry without preceding Date entry] 1000/1100")
+                "Line 1: [Duty entry without preceding Date entry] 1000/1100")
         with self.subTest("Bad time format"):
             data = "2024-02-01\n2200/2400"
             with self.assertRaises(efj.ValidationError) as e:
                 efj.Parser().parse(data)
             self.assertEqual(
                 str(e.exception),
-                "Line 1: [Invalid time string] 2200/2400")
+                "Line 2: [Invalid time string] 2200/2400")
         with self.subTest("Hyphen instead of slash"):
             data = "2024-02-01\n2200-2400"
             with self.assertRaises(efj.ValidationError) as e:
                 efj.Parser().parse(data)
             self.assertEqual(
                 str(e.exception),
-                "Line 1: [Bad syntax] 2200-2400")
+                "Line 2: [Bad syntax] 2200-2400")
 
 
 class TestSectorFlags (unittest.TestCase):
