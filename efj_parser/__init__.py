@@ -60,11 +60,15 @@ class Sector(NamedTuple):
 
 
 class ValidationError(Exception):
+    """An problem was found in the input data."""
 
     def __init__(self, line_number, message, problem_string):
         self.line_number = line_number
+        """The 1-indexed line number where the problem was found."""
         self.message = message
+        """A message describing the problem."""
         self.problem_string = problem_string
+        """The string that caused the problem."""
 
     def __str__(self):
         return (f"Line {self.line_number}: "

@@ -7,5 +7,7 @@ Electronic Flight Journal Parser
    :caption: Contents:
 
    format
-   data_structures
    parser
+   data_structures
+   exceptions
+
