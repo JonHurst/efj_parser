@@ -255,8 +255,8 @@ class Parser():
                     try:
                         ret = func(mo)
                     except _VE as e:
-                        raise ValidationError(c, e.message, mo.group(0))
-                    hook and hook(line, c, entry_type, cast(ParseRet, ret))
+                        raise ValidationError(c + 1, e.message, mo.group(0))
+                    hook and hook(line, c + 1, entry_type, cast(ParseRet, ret))
                     break
             if isinstance(ret, Duty):
                 duties.append(ret)
