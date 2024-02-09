@@ -5,10 +5,10 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="efj-parser",
-    version="0.9",
+    version="0.9.post1",
     author="Jon Hurst",
     author_email="jon.a@hursts.org.uk",
-    description="Parse an Electronic Flight Journal file",
+    description="Parse an electronic Flight Journal file",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/JonHurst/efj_parser",
@@ -22,4 +22,7 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     python_requires='>=3.11',
+    project_urls = {
+        "docs" : "https://hursts.org.uk/efjdocs/",
+        },
 )
