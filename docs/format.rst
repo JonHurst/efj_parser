@@ -10,8 +10,9 @@ moment how you might efficiently record your flying records in a pocket diary,
 you will likely come up with a paper based version of the scheme. It is a
 useful, human readable, format in and of itself, plus, using this parser, it is
 easy to generate other formats, including FCL.050 compliant logbooks — I have
-provided a tool (with an `online version <https://hursts.org.uk/efj/>`_ for
-those who prefer) that includes the ability to do just this.
+`provided a tool <https://hursts.org.uk/efjtkdocs>`_ (with an `online version
+<https://hursts.org.uk/efj/>`_ for those who prefer) that includes the ability
+to do just this.
 
 Since an eFJ is just a text file, it can be maintained with any of the myriad
 text editors that are available on each and every platform. There is zero
@@ -40,9 +41,9 @@ It is straightforward to enter this data manually, and there is assistance for
 this in the form of short forms, such as that the next day in a sequence can be
 represented by a ``+``, and functionality of the above mentioned tool, that
 includes expansion of these short forms and night flying calculations. For
-easyJet pilots there is also a tool (again with `an online version
-<https://hursts.org.uk/aims/>`_) that can extract the majority of this data
-from a downloaded AIMS roster.
+easyJet pilots `there is also a tool <https://hursts.org.uk/aimsdocs>`_ (again
+with `an online version <https://hursts.org.uk/aims/>`_) that can extract the
+majority of this data from a downloaded AIMS roster.
 
 
 Top Level Structure
