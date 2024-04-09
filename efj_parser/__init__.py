@@ -123,8 +123,11 @@ class Parser():
         ftl_correction = 0
         unused_flags = []
         for f in flags:
-            if f and (mo_cor := re.match(r"r(\d+)", f)):
-                ftl_correction = int(mo_cor.group(1))
+            if f and (mo_cor := re.match(r"r(:\d+)?", f)):
+                if mo_cor.group(1):
+                    ftl_correction = int(mo_cor.group(1)[1:])
+                else:
+                    ftl_correction = duration
             else:
                 unused_flags.append(f)
         comment = mo.group(4)[1:].strip() if mo.group(4) else ""

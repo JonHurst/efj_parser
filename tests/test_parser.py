@@ -22,7 +22,9 @@ G-EFGH:321
 / 1340/1540 v:30 n:10 ln
 
 ++
-0600/1200 r60 test # ESBY
+0600/1200 r:60 test # ESBY
++
+0600/0630 r # HCT
 """
         expected_duties = (
             efj.Duty(
@@ -33,7 +35,11 @@ G-EFGH:321
                 370, 0, (), "Comment"),
             efj.Duty(
                 dt.datetime(2024, 1, 24, 6),
-                360, 60, ("test",), "ESBY"))
+                360, 60, ("test",), "ESBY"),
+            efj.Duty(
+                dt.datetime(2024, 1, 25, 6),
+                30, 30, (), "HCT")
+        )
 
         expected_sectors = (
             efj.Sector(
