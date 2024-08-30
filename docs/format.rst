@@ -181,12 +181,15 @@ example: ::
 Role flags
 ~~~~~~~~~~
 
-The possible role flags are ``p1s``, ``p2``, ``put`` and ``ins``. Each of these
-may optionally be followed by a colon and an integer to specify the number of
-minutes of the flight that were operated in that role. A role flag without a
-colon or integer is equivalent to one with the colon and an integer
+The possible role flags are ``p1s``, ``p2``, ``put``, ``p0`` and ``ins``. Each
+of these may optionally be followed by a colon and an integer to specify the
+number of minutes of the flight that were operated in that role. A role flag
+without a colon or integer is equivalent to one with the colon and an integer
 representing the entire duration of the flight, e.g. for a 60 minute flight,
-``p1s`` is equivalent to ``p1s:60``.
+``p1s`` is equivalent to ``p1s:60``. The ``p0`` flag is included to indicate
+"other flying" such as observer or spo -- an additional flag can be used to
+indicate the nature of the flying, and this will be included in the extra_flags
+field of the sector to enable specialised processing.
 
 Any minutes not assigned as ``p1s``, ``p2`` and/or ``put``, are assumed to be
 operated as p1, so Captains just need to omit these flags. The ``ins`` flag is
@@ -198,6 +201,7 @@ Examples: ::
   BRS/CDG 1600/1700 p1s  # operating as p1s throughout the flight
   BRS/CDG 1600/1700 p2:30 p1s:30  # operating as p1s for half the flight
   BRS/CDG 1600/1700 ins  # operating as instructor
+  BRS/CDG 1600/1700 p0 spo  # operating as systems panel operator
 
 Flight rule flag
 ~~~~~~~~~~~~~~~~
