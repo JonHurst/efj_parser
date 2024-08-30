@@ -10,14 +10,14 @@ class TestParser(unittest.TestCase):
         data = """\
 2024-01-21
 1000/1430
-G-ABCD:320
+N1:320
 {FO: Bloggs}
 BRS/BFS 1100/1200 ins #belfast
 / 1300/1400 ins:20 test spme
 {}
 +
 1000/1610  # Comment
-G-EFGH:321
+OB-T-1274:A-321
 /NCE 1100/1300 ld:3
 / 1340/1540 v:30 n:10 ln
 
@@ -47,7 +47,7 @@ G-EFGH:321
                 efj.Roles(p1=60, instructor=60),
                 efj.Conditions(ifr=60),
                 efj.Landings(day=1),
-                efj.Aircraft("G-ABCD", "320"),
+                efj.Aircraft("N1", "320"),
                 efj.Airports("BRS", "BFS"),
                 "Self", (), "belfast",
                 (efj.Crewmember("FO", "Bloggs"),)),
@@ -56,7 +56,7 @@ G-EFGH:321
                 efj.Roles(p1=60, instructor=20),
                 efj.Conditions(ifr=60),
                 efj.Landings(day=1),
-                efj.Aircraft("G-ABCD", "320", "spme"),
+                efj.Aircraft("N1", "320", "spme"),
                 efj.Airports("BFS", "BRS"),
                 "Self", ("test",), "",
                 (efj.Crewmember("FO", "Bloggs"),)),
@@ -65,7 +65,7 @@ G-EFGH:321
                 efj.Roles(p1=120),
                 efj.Conditions(ifr=120),
                 efj.Landings(day=3),
-                efj.Aircraft("G-EFGH", "321"),
+                efj.Aircraft("OB-T-1274", "A-321"),
                 efj.Airports("BRS", "NCE"),
                 "Self", (), "", ()),
             efj.Sector(
@@ -73,7 +73,7 @@ G-EFGH:321
                 efj.Roles(p1=120),
                 efj.Conditions(night=10, ifr=90),
                 efj.Landings(night=1),
-                efj.Aircraft("G-EFGH", "321"),
+                efj.Aircraft("OB-T-1274", "A-321"),
                 efj.Airports("NCE", "BRS"),
                 "Self", (), "", ()))
         self.assertEqual(

@@ -248,7 +248,7 @@ class Parser():
              self.__parse_nextdate, "short_date"),
             (re.compile(r"\A(\d{4})/(\d{4})([^#]*)(#.+)?\Z"),
              self.__parse_duty, "duty"),
-            (re.compile(r"(\w{1,2}-\w{3,5})\s*:\s*([-\w]+)"),
+            (re.compile(r"([-\w]{2,10})\s*:\s*([-\w]+)"),
              self.__parse_aircraft, "aircraft"),
             (re.compile(r"\{([^}]*)}\Z"),
              self.__parse_crewlist, "crewlist"),
