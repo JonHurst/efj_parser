@@ -10,10 +10,11 @@ class TestParser(unittest.TestCase):
         data = """\
 2024-01-21
 1000/1430
-N1:320
+N1:320: mc
 {FO: Bloggs}
 BRS/BFS 1100/1200 ins #belfast
-/ 1300/1400 ins:20 test spme
+N2:320
+/ 1300/1400 ins:20 test
 {}
 +
 1000/1610  # Comment
@@ -47,7 +48,7 @@ OB-T-1274:A-321
                 efj.Roles(p1=60, instructor=60),
                 efj.Conditions(ifr=60),
                 efj.Landings(day=1),
-                efj.Aircraft("N1", "320"),
+                efj.Aircraft("N1", "320", "mc"),
                 efj.Airports("BRS", "BFS"),
                 "Self", (), "belfast",
                 (efj.Crewmember("FO", "Bloggs"),)),
@@ -56,7 +57,7 @@ OB-T-1274:A-321
                 efj.Roles(p1=60, instructor=20),
                 efj.Conditions(ifr=60),
                 efj.Landings(day=1),
-                efj.Aircraft("N1", "320", "spme"),
+                efj.Aircraft("N2", "320", "mc"),
                 efj.Airports("BFS", "BRS"),
                 "Self", ("test",), "",
                 (efj.Crewmember("FO", "Bloggs"),)),
@@ -65,7 +66,7 @@ OB-T-1274:A-321
                 efj.Roles(p1=120),
                 efj.Conditions(ifr=120),
                 efj.Landings(day=3),
-                efj.Aircraft("OB-T-1274", "A-321"),
+                efj.Aircraft("OB-T-1274", "A-321", ""),
                 efj.Airports("BRS", "NCE"),
                 "Self", (), "", ()),
             efj.Sector(
@@ -73,7 +74,7 @@ OB-T-1274:A-321
                 efj.Roles(p1=120),
                 efj.Conditions(night=10, ifr=90),
                 efj.Landings(night=1),
-                efj.Aircraft("OB-T-1274", "A-321"),
+                efj.Aircraft("OB-T-1274", "A-321", ""),
                 efj.Airports("NCE", "BRS"),
                 "Self", (), "", ()))
         self.assertEqual(
@@ -110,7 +111,7 @@ G-EFGH:321
                 efj.Roles(p1s=60),
                 efj.Conditions(ifr=60),
                 efj.Landings(day=1),
-                efj.Aircraft("G-ABCD", "320"),
+                efj.Aircraft("G-ABCD", "320", ""),
                 efj.Airports("BRS", "BFS"),
                 "Bloggs Joe", (), "belfast",
                 (efj.Crewmember("CP", "Bloggs Joe"),)),
@@ -119,7 +120,7 @@ G-EFGH:321
                 efj.Roles(p2=60),
                 efj.Conditions(ifr=60),
                 efj.Landings(),
-                efj.Aircraft("G-ABCD", "320"),
+                efj.Aircraft("G-ABCD", "320", ""),
                 efj.Airports("BFS", "BRS"),
                 "Bloggs Joe", (), "",
                 (efj.Crewmember("CP", "Bloggs Joe"),)),
@@ -128,7 +129,7 @@ G-EFGH:321
                 efj.Roles(p2=120),
                 efj.Conditions(ifr=120),
                 efj.Landings(),
-                efj.Aircraft("G-EFGH", "321"),
+                efj.Aircraft("G-EFGH", "321", ""),
                 efj.Airports("BRS", "NCE"),
                 "Pugwash", (), "", (
                     efj.Crewmember("CP", "Pugwash"),
@@ -138,7 +139,7 @@ G-EFGH:321
                 efj.Roles(p1=90, p1s=30),
                 efj.Conditions(ifr=120),
                 efj.Landings(day=1),
-                efj.Aircraft("G-EFGH", "321"),
+                efj.Aircraft("G-EFGH", "321", ""),
                 efj.Airports("NCE", "BRS"),
                 "Self, Pugwash", (), "", (
                     efj.Crewmember("CP", "Pugwash"),
@@ -149,7 +150,7 @@ G-EFGH:321
             (expected_duties, expected_sectors))
 
     def test_flags(self):
-        aircraft = efj.Aircraft("G-ABCD", "320")
+        aircraft = efj.Aircraft("G-ABCD", "320", "")
         roles = efj.Roles(p1=60)
         airports = efj.Airports("BRS", "BFS")
         with self.subTest("Instructor flag"):
@@ -443,25 +444,3 @@ class TestSectorFlags (unittest.TestCase):
                 efj._process_conditions(("n:2",), 1),
             self.assertEqual(ve.exception.message,
                              "Night duration more than flight duration")
-
-    def test_class_override(self):
-        with self.subTest("SPSE"):
-            self.assertEqual(
-                efj._process_class_override(("spse",)),
-                ("spse", ()))
-        with self.subTest("SPME"):
-            self.assertEqual(
-                efj._process_class_override(("spme",)),
-                ("spme", ()))
-        with self.subTest("MC"):
-            self.assertEqual(
-                efj._process_class_override(("mc",)),
-                ("mc", ()))
-        with self.subTest("SPSE"):
-            self.assertEqual(
-                efj._process_class_override(("test",)),
-                ("", ("test",)))
-        with self.subTest("Multiple overrides"):
-            self.assertEqual(
-                efj._process_class_override(("spse", "spme", "mc")),
-                ("mc", ()))

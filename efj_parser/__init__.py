@@ -37,7 +37,7 @@ class Landings(NamedTuple):
 class Aircraft(NamedTuple):
     reg: str  #: The registration of the aircraft
     type_: str  #: The type of the aircraft
-    class_: str = ""  #: Override to class based on type: spse, spme or mc
+    class_: str  #: Class: spse, spme or mc
 
 
 class Airports(NamedTuple):
@@ -89,7 +89,8 @@ class Parser():
     def __init__(self) -> None:
         self.date: Optional[dt.date] = None
         self.airports = Airports("", "")
-        self.aircraft = Aircraft("", "")
+        self.aircraft = Aircraft("", "", "")
+        self.class_lookup: dict[str, str] = {}
         self.captain = ""
         self.crewlist: list[Crewmember] = []
 
@@ -135,7 +136,11 @@ class Parser():
                     tuple(unused_flags), comment)
 
     def __parse_aircraft(self, mo: re.Match) -> Aircraft:
-        self.aircraft = Aircraft(mo.group(1).strip(), mo.group(2).strip())
+        reg, type_ = mo.group(1).strip(), mo.group(2).strip()
+        if mo.lastindex == 3:
+            self.class_lookup[type_] = mo.group(3).strip()
+        class_ = self.class_lookup.get(type_, "")
+        self.aircraft = Aircraft(reg, type_, class_)
         return self.aircraft
 
     def __parse_crewlist(self, mo: re.Match) -> list[Crewmember]:
@@ -193,7 +198,6 @@ class Parser():
         else:
             landings, unused_flags = _process_landings(unused_flags, duration,
                                                        conditions.night)
-        aircraft_class, unused_flags = _process_class_override(unused_flags)
         if roles.p1 == duration:
             self.captain = "Self"
         else:
@@ -210,7 +214,7 @@ class Parser():
             roles,
             conditions,
             landings,
-            self.aircraft._replace(class_=aircraft_class),
+            self.aircraft,
             self.airports,
             self.captain,
             unused_flags,
@@ -248,7 +252,8 @@ class Parser():
              self.__parse_nextdate, "short_date"),
             (re.compile(r"\A(\d{4})/(\d{4})([^#]*)(#.+)?\Z"),
              self.__parse_duty, "duty"),
-            (re.compile(r"([-\w]{2,10})\s*:\s*([-\w]+)"),
+            (re.compile(r"([-\w]{2,10})\s*:\s*([-\w]+)"
+                        r"(?:\s*:\s*(mc|spse|spme))?"),
              self.__parse_aircraft, "aircraft"),
             (re.compile(r"\{([^}]*)}\Z"),
              self.__parse_crewlist, "crewlist"),
@@ -368,16 +373,3 @@ def _process_conditions(
                 if vfr > duration:
                     raise _VE("VFR duration more than flight duration")
     return Conditions(night, duration - vfr), tuple(unused)
-
-
-def _process_class_override(
-        flags: tuple[str, ...]
-) -> tuple[str, tuple[str, ...]]:
-    retval = ""
-    unused = []
-    for f in flags:
-        if f in {"spse", "spme", "mc"}:
-            retval = f
-        else:
-            unused.append(f)
-    return retval, tuple(unused)
