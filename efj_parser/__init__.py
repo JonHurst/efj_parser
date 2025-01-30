@@ -12,7 +12,7 @@ class Duty(NamedTuple):
 
 
 class Crewmember(NamedTuple):
-    role: str  #: The crewmember's role (e.g. CP, FO, PU, FA)
+    role: str  #: The crewmember's role (e.g. ``CP``, ``FO``, ``PU``, ``FA``)
     name: str  #: The crewmember's name
 
 
@@ -37,7 +37,7 @@ class Landings(NamedTuple):
 class Aircraft(NamedTuple):
     reg: str  #: The registration of the aircraft
     type_: str  #: The type of the aircraft
-    class_: str  #: Class: spse, spme or mc
+    class_: str  #: Class: ``spse``, ``spme`` or ``mc``
 
 
 class Airports(NamedTuple):
@@ -51,12 +51,12 @@ class Sector(NamedTuple):
     roles: Roles  #: Minutes operating in each role
     conditions: Conditions  #: Minutes operating in ifr and at night
     landings: Landings  #: Number of day and night landings
-    aircraft: Aircraft  #: Type and registration of the aircraft
+    aircraft: Aircraft  #: Type, registration and class of the aircraft
     airports: Airports  #: Origin and destination airports
     captain: str  #: Name(s) of captain(s), Self for oneself
     extra_flags: tuple[str, ...]  #: Any flags not processed by the parser
     comment: str  #: Remarks
-    crew: tuple[Crewmember, ...]  #: A (possible empty) list of crew
+    crew: tuple[Crewmember, ...]  #: A (possibly empty) list of crew
 
 
 class ValidationError(Exception):

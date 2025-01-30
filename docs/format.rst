@@ -115,11 +115,27 @@ record these as they do not count towards cumulative duty at all.
 Aircraft
 --------
 
-Registration and type separated by a colon: ::
+Registration, type and class, separated by colons: ::
 
-    G-ABCD:A320
+    G-ABCD:A320:mc
 
-These may be any combination of letters, numbers or hyphens.
+Registration and type may be any combination of letters, numbers or hyphens.
+
+Class can be ``mc`` (multi-crew), ``spse`` (single pilot, single engine) or
+``spme`` (single pilot, multi-engine).
+
+The class can be omitted: ::
+
+  G-ABCD:A320
+
+In this case, the parser will use the value of the class that was last
+associated with the type. If a class has *not* previously been associated with
+the type, the class will be the empty string.
+
+In general this means that the class will be recorded on the first occasion that
+a new aircraft type is flown, and thereafter the second form will be used. If a
+class is flown both as single pilot and multi-crew at different times, the first
+form can be used to toggle between them.
 
 Crew
 ----
@@ -256,13 +272,6 @@ Examples: ::
   EMA/EMA 1000/1300 ins ld:10  # 10 day landings as instructor
   EMA/FNC 1000/1300 ld:0  # Zero landings for some reason
 
-Aircraft class overrides
-~~~~~~~~~~~~~~~~~~~~~~~~
-
-Whether a flight is single-pilot, single-engine; single-pilot, multi-engine; or
-multi-crew will usually be inferred from the type of aircraft being flown. In
-very rare cases, this might need to be over-ridden on a sector by sector basis,
-in which case the flags ``spse``, ``spme`` or ``mc`` respectively can be used.
 
 Unknown flags
 ~~~~~~~~~~~~~
