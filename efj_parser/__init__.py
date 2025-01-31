@@ -120,20 +120,16 @@ class Parser():
         if dt_end < dt_start:
             dt_end += dt.timedelta(days=1)
         duration = int((dt_end - dt_start).total_seconds() / 60)
-        flags = tuple(X.strip() for X in mo.group(3).split())
         ftl_correction = 0
         unused_flags = []
-        for f in flags:
-            if f and (mo_cor := re.match(r"r(:\d+)?", f)):
-                if mo_cor.group(1):
-                    ftl_correction = int(mo_cor.group(1)[1:])
-                else:
-                    ftl_correction = duration
+        for f in _split_flags(mo.group(3)):
+            if f[0] == "r":
+                ftl_correction += f[1] if f[1] else duration
             else:
                 unused_flags.append(f)
         comment = mo.group(4)[1:].strip() if mo.group(4) else ""
         return Duty(dt_start, duration, ftl_correction,
-                    tuple(unused_flags), comment)
+                    _join_flags(tuple(unused_flags)), comment)
 
     def __parse_aircraft(self, mo: re.Match) -> Aircraft:
         reg, type_ = mo.group(1).strip(), mo.group(2).strip()
