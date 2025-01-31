@@ -223,9 +223,6 @@ class Parser():
     def __parse_comment(self, mo: re.Match) -> str:
         return mo.group(1) or ""
 
-    def __invalid_syntax(self, mo: re.Match) -> None:
-        raise _VE("Bad syntax")
-
     def parse(self, s: str, hook: ParseHook = None
               ) -> tuple[tuple[Duty, ...], tuple[Sector, ...]]:
         """Extract duties and sectors from an eFJ string
@@ -243,23 +240,21 @@ class Parser():
         duties: list[Duty] = []
         sectors: list[Sector] = []
         func_map = [
-            (re.compile(r"#(.*)"),
-             self.__parse_comment, "comment"),
+            (re.compile(r"(\w*)/(\w*)\s*(\d{4})/(\d{4})([^#]*+)#?(.*)"),
+             self.__parse_sector, "sector"),
+            (re.compile(r"\{([^}]*)}"),
+             self.__parse_crewlist, "crewlist"),
             (re.compile(r"(\d{4}-\d{2}-\d{2})"),
              self.__parse_date, "date"),
-            (re.compile(r"(\++)"),
-             self.__parse_nextdate, "short_date"),
-            (re.compile(r"(\d{4})/(\d{4})([^#]*+)(.*)"),
+            (re.compile(r"(\d{4})/(\d{4})([^#]*+)#?(.*)"),
              self.__parse_duty, "duty"),
             (re.compile(r"([-\w]{2,10})(?>\s*:\s*)([-\w]+)"
                         r"(?:\s*:\s*(mc|spse|spme))?"),
              self.__parse_aircraft, "aircraft"),
-            (re.compile(r"\{([^}]*)}"),
-             self.__parse_crewlist, "crewlist"),
-            (re.compile(r"(\w*)/(\w*)\s*(\d{4})/(\d{4})([^#]*)(.*)"),
-             self.__parse_sector, "sector"),
-            (re.compile(r".+"),
-             self.__invalid_syntax, "invalid"),
+            (re.compile(r"(\++)"),
+             self.__parse_nextdate, "short_date"),
+            (re.compile(r"#(.*)"),
+             self.__parse_comment, "comment"),
         ]
         for c, line in enumerate(s.splitlines()):
             line = line.strip()
@@ -275,6 +270,8 @@ class Parser():
                         raise ValidationError(c + 1, e.message, mo.group(0))
                     hook and hook(line, c + 1, entry_type, cast(ParseRet, ret))
                     break
+            else:
+                raise _VE("Bad syntax")
             if isinstance(ret, Duty):
                 duties.append(ret)
             elif isinstance(ret, Sector):
