@@ -96,7 +96,7 @@ class Parser():
 
     def __parse_date(self, mo: re.Match) -> dt.date:
         try:
-            self.date = dt.datetime.strptime(mo.group(1), "%Y-%m-%d")
+            self.date = dt.date.fromisoformat(mo.group(1))
             return self.date
         except ValueError:
             raise _VE("Incorrect Date entry")
@@ -111,8 +111,8 @@ class Parser():
         if not self.date:
             raise _VE("Duty entry without preceding Date entry")
         try:
-            t_start = dt.datetime.strptime(mo.group(1), '%H%M').time()
-            t_end = dt.datetime.strptime(mo.group(2), '%H%M').time()
+            t_start = dt.time.fromisoformat(mo.group(1))
+            t_end = dt.time.fromisoformat(mo.group(2))
         except ValueError:
             raise _VE("Invalid time string")
         dt_start = dt.datetime.combine(self.date, t_start)
@@ -180,8 +180,8 @@ class Parser():
         self.airports = Airports(mo.group(1) or self.airports.dest,
                                  mo.group(2) or self.airports.origin)
         try:
-            ts = dt.datetime.strptime(mo.group(3), '%H%M').time()  # Off blocks
-            te = dt.datetime.strptime(mo.group(4), '%H%M').time()  # On blocks
+            ts = dt.time.fromisoformat(mo.group(3))  # Off blocks
+            te = dt.time.fromisoformat(mo.group(4))  # On blocks
         except ValueError:
             raise _VE("Incorrect time field")
         flags = tuple(mo.group(5).split())
