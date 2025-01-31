@@ -244,20 +244,20 @@ class Parser():
         duties: list[Duty] = []
         sectors: list[Sector] = []
         func_map = [
-            (re.compile(r"\A#(.*)\Z"),
+            (re.compile(r"#(.*)"),
              self.__parse_comment, "comment"),
-            (re.compile(r"\A(\d{4}-\d{2}-\d{2})\Z"),
+            (re.compile(r"(\d{4}-\d{2}-\d{2})"),
              self.__parse_date, "date"),
-            (re.compile(r"\A\s*(\++)\s*\Z"),
+            (re.compile(r"(\++)"),
              self.__parse_nextdate, "short_date"),
-            (re.compile(r"\A(\d{4})/(\d{4})([^#]*)(#.+)?\Z"),
+            (re.compile(r"(\d{4})/(\d{4})([^#]*+)(.*)"),
              self.__parse_duty, "duty"),
-            (re.compile(r"([-\w]{2,10})\s*:\s*([-\w]+)"
+            (re.compile(r"([-\w]{2,10})(?>\s*:\s*)([-\w]+)"
                         r"(?:\s*:\s*(mc|spse|spme))?"),
              self.__parse_aircraft, "aircraft"),
-            (re.compile(r"\{([^}]*)}\Z"),
+            (re.compile(r"\{([^}]*)}"),
              self.__parse_crewlist, "crewlist"),
-            (re.compile(r"(\w+)?/(\w+)?\s*(\d{4})/(\d{4})([^#]*)?(#.+)?"),
+            (re.compile(r"(\w*)/(\w*)\s*(\d{4})/(\d{4})([^#]*)(.*)"),
              self.__parse_sector, "sector"),
             (re.compile(r".+"),
              self.__invalid_syntax, "invalid"),
@@ -269,7 +269,7 @@ class Parser():
                 continue
             ret = None
             for rexp, func, entry_type in func_map:
-                if mo := rexp.match(line):
+                if mo := rexp.fullmatch(line):
                     try:
                         ret = func(mo)
                     except _VE as e:
