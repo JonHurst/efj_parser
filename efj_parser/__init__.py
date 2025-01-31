@@ -82,6 +82,8 @@ class _VE(Exception):
 
 ParseRet = Union[dt.date, Duty, Aircraft, list[Crewmember], Sector, str]
 ParseHook = Optional[Callable[[str, int, str, ParseRet], None]]
+Flag = tuple[str, Optional[int]]
+Flags = tuple[Flag, ...]
 
 
 class Parser():
@@ -171,25 +173,27 @@ class Parser():
         if not mo.group(2) and not self.airports.origin:  # Blank origin
             raise _VE("Blank To without previous From")
 
-    def __parse_sector(self, mo: re.Match) -> Sector:
-        self.__pre_validate_sector(mo)
-        self.airports = Airports(mo.group(1) or self.airports.dest,
-                                 mo.group(2) or self.airports.origin)
+    def __parse_sector_times(
+            self, t_start: str, t_end: str
+    ) -> tuple[dt.datetime, int]:
         try:
-            ts = dt.time.fromisoformat(mo.group(3))  # Off blocks
-            te = dt.time.fromisoformat(mo.group(4))  # On blocks
+            ts = dt.time.fromisoformat(t_start)  # Off blocks
+            te = dt.time.fromisoformat(t_end)  # On blocks
         except ValueError:
             raise _VE("Incorrect time field")
-        try:
-            flags = _split_flags(mo.group(5))
-        except ValueError:
-            raise _VE("Bad flags")
         start = dt.datetime.combine(cast(dt.date, self.date), ts)
         duration = int(
             (dt.datetime.combine(cast(dt.date, self.date), te) - start)
             .total_seconds() // 60)
         if duration < 0:
             duration += 1440
+        return (start, duration)
+
+    def __parse_sector_flags(
+            self,
+            flags: Flags,
+            duration: int
+    ) -> tuple[Conditions, Roles, Landings, Flags]:
         conditions, unused_flags = _process_conditions(flags, duration)
         roles, unused_flags = _process_roles(unused_flags, duration)
         if roles.p2 == duration:
@@ -197,6 +201,19 @@ class Parser():
         else:
             landings, unused_flags = _process_landings(unused_flags, duration,
                                                        conditions.night)
+        return conditions, roles, landings, unused_flags
+
+    def __parse_sector(self, mo: re.Match) -> Sector:
+        self.__pre_validate_sector(mo)
+        self.airports = Airports(mo.group(1) or self.airports.dest,
+                                 mo.group(2) or self.airports.origin)
+        start, duration = self.__parse_sector_times(mo.group(3), mo.group(4))
+        try:
+            flags = _split_flags(mo.group(5))
+        except ValueError:
+            raise _VE("Bad flags")
+        conditions, roles, landings, unused_flags = (
+            self.__parse_sector_flags(flags, duration))
         if roles.p1 == duration:
             self.captain = "Self"
         else:
@@ -277,10 +294,6 @@ class Parser():
             elif isinstance(ret, Sector):
                 sectors.append(ret)
         return (tuple(duties), tuple(sectors))
-
-
-Flag = tuple[str, Optional[int]]
-Flags = tuple[Flag, ...]
 
 
 def _split_flags(flag_str: str) -> Flags:
