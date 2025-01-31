@@ -295,7 +295,7 @@ class TestSectorFlags (unittest.TestCase):
                 (efj.Landings(day=1, night=0), ()))
         with self.subTest("PM, day"):
             self.assertEqual(
-                efj._process_landings(("m",), 1, 0),
+                efj._process_landings((("m", None),), 1, 0),
                 (efj.Landings(day=0, night=0), ()))
         with self.subTest("No flags, night"):
             self.assertEqual(
@@ -303,7 +303,7 @@ class TestSectorFlags (unittest.TestCase):
                 (efj.Landings(day=0, night=1), ()))
         with self.subTest("PM, night"):
             self.assertEqual(
-                efj._process_landings(("m",), 1, 1),
+                efj._process_landings((("m", None),), 1, 1),
                 (efj.Landings(day=0, night=0), ()))
         with self.subTest("Partial night, day landing"):
             self.assertEqual(
@@ -311,41 +311,37 @@ class TestSectorFlags (unittest.TestCase):
                 (efj.Landings(day=1, night=0), ()))
         with self.subTest("Partial night, night landing"):
             self.assertEqual(
-                efj._process_landings(("ln",), 2, 1),
+                efj._process_landings((("ln", None),), 2, 1),
                 (efj.Landings(day=0, night=1), ()))
         with self.subTest("Multiple day landings"):
             self.assertEqual(
-                efj._process_landings(("ld:2",), 2, 0),
+                efj._process_landings((("ld", 2),), 2, 0),
                 (efj.Landings(day=2, night=0), ()))
         with self.subTest("Multiple night landings"):
             self.assertEqual(
-                efj._process_landings(("ln:2",), 2, 1),
+                efj._process_landings((("ln", 2),), 2, 1),
                 (efj.Landings(day=0, night=2), ()))
         with self.subTest("Mix of landings, single"):
             self.assertEqual(
-                efj._process_landings(("ln", "ld"), 2, 1),
+                efj._process_landings((("ln", None), ("ld", None)), 2, 1),
                 (efj.Landings(day=1, night=1), ()))
         with self.subTest("Mix of landings, multi"):
             self.assertEqual(
-                efj._process_landings(("ln:2", "ld"), 2, 1),
+                efj._process_landings((("ln", 2), ("ld", None)), 2, 1),
                 (efj.Landings(day=1, night=2), ()))
         with self.subTest("Zero landings, day flag"):
             self.assertEqual(
-                efj._process_landings(("ld:0",), 2, 1),
+                efj._process_landings((("ld", 0),), 2, 1),
                 (efj.Landings(day=0, night=0), ()))
         with self.subTest("Zero landings, night flag"):
             self.assertEqual(
-                efj._process_landings(("ln:0",), 2, 1),
+                efj._process_landings((("ln", 0),), 2, 1),
                 (efj.Landings(day=0, night=0), ()))
         with self.subTest("Day landing, night flight"):
             # Assume that user did this for a reason
             self.assertEqual(
-                efj._process_landings(("ld",), 2, 2),
+                efj._process_landings((("ld", None),), 2, 2),
                 (efj.Landings(day=1, night=0), ()))
-        with self.subTest("Bad quantity"):
-            self.assertEqual(
-                efj._process_landings(("ln:xyz",), 1, 0),
-                (efj.Landings(1, 0), ("ln:xyz",)))
 
     def test_roles(self):
         with self.subTest("All p1"):
@@ -354,56 +350,52 @@ class TestSectorFlags (unittest.TestCase):
                 (efj.Roles(p1=1), ()))
         with self.subTest("All p1s"):
             self.assertEqual(
-                efj._process_roles(("p1s",), 1),
+                efj._process_roles((("p1s", None),), 1),
                 (efj.Roles(p1s=1), ()))
         with self.subTest("All p2"):
             self.assertEqual(
-                efj._process_roles(("p2",), 1),
+                efj._process_roles((("p2", None),), 1),
                 (efj.Roles(p2=1), ()))
         with self.subTest("All put"):
             self.assertEqual(
-                efj._process_roles(("put",), 1),
+                efj._process_roles((("put", None),), 1),
                 (efj.Roles(put=1), ()))
         with self.subTest("Split roles, put & p1"):
             self.assertEqual(
-                efj._process_roles(("put:1",), 2),
+                efj._process_roles((("put", 1),), 2),
                 (efj.Roles(p1=1, put=1), ()))
         with self.subTest("Split roles, p1s & p1"):
             self.assertEqual(
-                efj._process_roles(("p1s:1",), 2),
+                efj._process_roles((("p1s", 1),), 2),
                 (efj.Roles(p1=1, p1s=1), ()))
         with self.subTest("Split roles, p2 & p1"):
             self.assertEqual(
-                efj._process_roles(("p2:1",), 2),
+                efj._process_roles((("p2", 1),), 2),
                 (efj.Roles(p1=1, p2=1), ()))
         with self.subTest("Split roles, p1s & put"):
             self.assertEqual(
-                efj._process_roles(("p1s:1", "put:1"), 2),
+                efj._process_roles((("p1s", 1), ("put", 1)), 2),
                 (efj.Roles(p1s=1, put=1), ()))
         with self.subTest("Role duration > duration"):
             with self.assertRaises(efj._VE) as ve:
-                efj._process_roles(("p1s:2",), 1)
+                efj._process_roles((("p1s", 2),), 1)
                 self.assertEqual(ve.exception.message, "Too many roles")
         with self.subTest("Two untimed roles"):
             with self.assertRaises(efj._VE) as ve:
-                efj._process_roles(("p1s", "put"), 1)
+                efj._process_roles((("p1s", None), ("put", None)), 1)
             self.assertEqual(ve.exception.message, "Too many roles")
         with self.subTest("Instructor flag"):
             self.assertEqual(
-                efj._process_roles(("ins",), 1),
+                efj._process_roles((("ins", None),), 1),
                 (efj.Roles(p1=1, instructor=1), ()))
         with self.subTest("Instructor flag, partial"):
             self.assertEqual(
-                efj._process_roles(("ins:1",), 2),
+                efj._process_roles((("ins", 1),), 2),
                 (efj.Roles(p1=2, instructor=1), ()))
         with self.subTest("Unknown role"):
             self.assertEqual(
-                efj._process_roles(("p3",), 2),
-                (efj.Roles(p1=2), ("p3",)))
-        with self.subTest("Bad duration"):
-            self.assertEqual(
-                efj._process_roles(("p1s:xyz",), 1),
-                (efj.Roles(p1=1), ("p1s:xyz",)))
+                efj._process_roles((("p3", None),), 2),
+                (efj.Roles(p1=2), (("p3", None),)))
 
     def test_conditions(self):
         with self.subTest("No flags"):
@@ -412,35 +404,48 @@ class TestSectorFlags (unittest.TestCase):
                 (efj.Conditions(ifr=1, night=0), ()))
         with self.subTest("VFR flag"):
             self.assertEqual(
-                efj._process_conditions(("v",), 1),
+                efj._process_conditions((("v", None),), 1),
                 (efj.Conditions(ifr=0, night=0), ()))
         with self.subTest("Night flag"):
             self.assertEqual(
-                efj._process_conditions(("n",), 1),
+                efj._process_conditions((("n", None),), 1),
                 (efj.Conditions(ifr=1, night=1), ()))
         with self.subTest("VFR at night"):
             self.assertEqual(
-                efj._process_conditions(("n", "v"), 1),
+                efj._process_conditions((("n", None), ("v", None)), 1),
                 (efj.Conditions(ifr=0, night=1), ()))
         with self.subTest("Part VFR"):
             self.assertEqual(
-                efj._process_conditions(("v:1",), 2),
+                efj._process_conditions((("v", 1),), 2),
                 (efj.Conditions(ifr=1, night=0), ()))
         with self.subTest("Part Night"):
             self.assertEqual(
-                efj._process_conditions(("n:1",), 2),
+                efj._process_conditions((("n", 1),), 2),
                 (efj.Conditions(ifr=2, night=1), ()))
-        with self.subTest("Bad duration"):
-            self.assertEqual(
-                efj._process_conditions(("v:xyz",), 2),
-                (efj.Conditions(ifr=2, night=0), ("v:xyz",)))
         with self.subTest("VFR duration > duration"):
             with self.assertRaises(efj._VE) as ve:
-                efj._process_conditions(("v:2",), 1),
+                efj._process_conditions((("v", 2),), 1),
             self.assertEqual(ve.exception.message,
                              "VFR duration more than flight duration")
         with self.subTest("Night duration > duration"):
             with self.assertRaises(efj._VE) as ve:
-                efj._process_conditions(("n:2",), 1),
+                efj._process_conditions((("n", 2),), 1),
             self.assertEqual(ve.exception.message,
                              "Night duration more than flight duration")
+
+
+class TestUtility(unittest.TestCase):
+
+    def test_split_flags(self):
+        res = tuple(efj._split_flags("  p2 put:20 ln:1 ins  "))
+        exp = (("p2", None), ("put", 20), ("ln", 1), ("ins", None))
+        self.assertEqual(res, exp)
+        with self.assertRaises(ValueError):
+            tuple(efj._split_flags("ln:1 ab:no"))
+
+    def test_join_flags(self):
+        res = efj._join_flags(
+            (("p2", None), ("put", 20), ("ln", 1), ("ins", None))
+        )
+        exp = ("p2", "put:20", "ln:1", "ins")
+        self.assertEqual(res, exp)

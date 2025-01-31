@@ -184,7 +184,10 @@ class Parser():
             te = dt.time.fromisoformat(mo.group(4))  # On blocks
         except ValueError:
             raise _VE("Incorrect time field")
-        flags = tuple(mo.group(5).split())
+        try:
+            flags = _split_flags(mo.group(5))
+        except ValueError:
+            raise _VE("Bad flags")
         start = dt.datetime.combine(cast(dt.date, self.date), ts)
         duration = int(
             (dt.datetime.combine(cast(dt.date, self.date), te) - start)
@@ -217,7 +220,7 @@ class Parser():
             self.aircraft,
             self.airports,
             self.captain,
-            unused_flags,
+            _join_flags(unused_flags),
             comment,
             tuple(self.crewlist))
 
@@ -283,29 +286,47 @@ class Parser():
         return (tuple(duties), tuple(sectors))
 
 
+Flag = tuple[str, Optional[int]]
+Flags = tuple[Flag, ...]
+
+
+def _split_flags(flag_str: str) -> Flags:
+    """Clean and split flag string.
+
+    :param flag_str: Input string such as "p2:20 ln:1 ins"
+    :returns: tuple of pairs like (("p2", 20), ("ln", 1), ("ins", None), ...)
+    :raises: ValueError if RHS of : is not convertible to integer
+    """
+    fields = flag_str.strip().split()
+    return tuple((L[0], int(L[1])) if len(L) == 2 else (L[0], None)
+                 for L in (X.split(":", 1) for X in fields))
+
+
+def _join_flags(flags: Flags) -> tuple[str, ...]:
+    """Join Flags into a tuple of str"""
+    return tuple(f"{X[0]}:{X[1]}" if X[1] else X[0] for X in flags)
+
+
 def _process_landings(
-        flags: tuple[str, ...],
+        flags: Flags,
         duration: int,
         night: int
-) -> tuple[Landings, tuple[str, ...]]:
+) -> tuple[Landings, Flags]:
     night_ldg, day_ldg = 0, 0
     found_landing_flag = False
-    re_day = re.compile(r"\Ald(:\d+)?\Z")
-    re_night = re.compile(r"\Aln(:\d+)?\Z")
-    unused = []
+    unused: list[Flag] = []
     for f in flags:
-        if f == "m":
-            night_ldg, day_ldg = 0, 0
-            found_landing_flag = True
-            break
-        if mo := re_day.match(f):
-            day_ldg = int(mo.group(1)[1:]) if mo.group(1) else 1
-            found_landing_flag = True
-        elif mo := re_night.match(f):
-            night_ldg = int(mo.group(1)[1:]) if mo.group(1) else 1
-            found_landing_flag = True
-        else:
-            unused.append(f)
+        match f[0]:
+            case "m":
+                found_landing_flag = True
+            case "ld":
+                day_ldg += 1 if f[1] is None else f[1]
+                found_landing_flag = True
+            case "ln":
+                night_ldg += 1 if f[1] is None else f[1]
+                found_landing_flag = True
+            case _:
+                unused.append(f)
     if not found_landing_flag:
         if duration == night:
             night_ldg = 1
@@ -314,62 +335,58 @@ def _process_landings(
     return Landings(day_ldg, night_ldg), tuple(unused)
 
 
-def _process_roles(
-        flags: tuple[str, ...],
-        duration: int
-) -> tuple[Roles, tuple[str, ...]]:
-    """Extract role durations from flags
+def _process_roles(flags: Flags, duration: int) -> tuple[Roles, Flags]:
+    """Extract role durations from sector flags
 
     :param flags: Sector flags
+    :param duration: Total duration of sector
     :return: A Roles object and the flags input parameter with processed flags
         removed.
     """
-    p1, inst = duration, 0
-    roles = [0, 0, 0, 0]
-    re_role = re.compile(r"\A(p1s|p2|put|p0)(:\d+)?\Z")
-    re_inst = re.compile(r"\A(ins)(:\d+)?\Z")
-    unused: list[str] = []
+    p1s, p2, put, p0, ins = 0, 0, 0, 0, 0
+    unused: list[Flag] = []
     for f in flags:
-        if mo := re_role.match(f):
-            idx = ("p1s", "p2", "put", "p0").index(mo.group(1))
-            roles[idx] = int(mo.group(2)[1:]) if mo.group(2) else duration
-            p1 -= roles[idx]
-            if p1 < 0:
-                raise _VE("Too many roles")
-        elif mo := re_inst.match(f):
-            inst = int(mo.group(2)[1:]) if mo.group(2) else duration
-        else:
-            unused.append(f)
-    return Roles(p1, roles[0], roles[1], roles[2], inst), tuple(unused)
+        match f[0]:
+            case "p1s":
+                p1s += f[1] if f[1] else duration
+            case "p2":
+                p2 += f[1] if f[1] else duration
+            case "put":
+                put += f[1] if f[1] else duration
+            case "p0":
+                p0 += f[1] if f[1] else duration
+            case "ins":
+                ins += f[1] if f[1] else duration
+                if ins > duration:
+                    raise _VE("Bad instructor flag")
+            case _:
+                unused.append(f)
+    p1 = duration - (p1s + p2 + put + p0)
+    if p1 < 0:
+        raise _VE("Too many roles")
+    return Roles(p1, p1s, p2, put, ins), tuple(unused)
 
 
-def _process_conditions(
-        flags: tuple[str, ...], duration: int
-) -> tuple[Conditions, tuple[str, ...]]:
-    """Processes sector condition flags
+def _process_conditions(flags: Flags, dur: int) -> tuple[Conditions, Flags]:
+    """Extract sector conditions from sector flags
 
     :param flags: The flags as a tuple of strings
+    :param dur: The total duration of the sector
     :return: A tuple of the form (Conditions, unused_flags) where unused flags
         is the input tuple with used flags removed.
     """
     night, vfr = 0, 0
-    unused: list[str] = []
-    re_flag = re.compile(r"\A(n|v)(:\d+)?\Z")
+    unused: list[Flag] = []
     for f in flags:
-        mo = re_flag.match(f)
-        if not mo:
-            unused.append(f)
-            continue
-        if mo.group(1) == "n":
-            night = duration
-            if mo.group(2):
-                night = int(mo.group(2)[1:])
-                if night > duration:
+        match f[0]:
+            case "n":
+                night += f[1] if f[1] else dur
+                if night > dur:
                     raise _VE("Night duration more than flight duration")
-        elif mo.group(1) == "v":
-            vfr = duration
-            if mo.group(2):
-                vfr = int(mo.group(2)[1:])
-                if vfr > duration:
+            case "v":
+                vfr += f[1] if f[1] else dur
+                if vfr > dur:
                     raise _VE("VFR duration more than flight duration")
-    return Conditions(night, duration - vfr), tuple(unused)
+            case _:
+                unused.append(f)
+    return Conditions(night, dur - vfr), tuple(unused)
