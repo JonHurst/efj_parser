@@ -121,24 +121,25 @@ class Parser():
     def __parse_duty(self, mo: re.Match) -> Duty:
         if not self.date:
             raise _VE("Duty entry without preceding Date entry")
+        start_str, end_str, flags, comment = (
+            X.strip() if X else "" for X in mo.group(1, 2, 3, 4))
         try:
-            t_start = dt.time.fromisoformat(mo.group(1))
-            t_end = dt.time.fromisoformat(mo.group(2))
+            t_start = dt.time.fromisoformat(start_str)
+            t_end = dt.time.fromisoformat(end_str)
         except ValueError:
             raise _VE("Invalid time string")
         dt_start = dt.datetime.combine(self.date, t_start)
-        dt_end = dt.datetime.combine(self.date, t_end)
-        if dt_end < dt_start:
-            dt_end += dt.timedelta(days=1)
-        duration = int((dt_end - dt_start).total_seconds() / 60)
+        duration = ((t_end.hour - t_start.hour) * 60 +
+                    (t_end.minute - t_start.minute))
+        if duration < 0:
+            duration += 1440
         ftl_correction = 0
         unused_flags = []
-        for f in _split_flags(mo.group(3)):
+        for f in _split_flags(flags):
             if f[0] == "r":
                 ftl_correction += f[1] if f[1] else duration
             else:
                 unused_flags.append(f)
-        comment = mo.group(4).strip() if mo.group(4) else ""
         return Duty(dt_start, duration, ftl_correction,
                     _join_flags(tuple(unused_flags)), comment)
 
