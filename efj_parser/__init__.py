@@ -144,10 +144,12 @@ class Parser():
                     _join_flags(tuple(unused_flags)), comment)
 
     def __parse_aircraft(self, mo: re.Match) -> Aircraft:
-        reg, type_ = mo.group(1).strip(), mo.group(2).strip()
-        if mo.lastindex == 3:
-            self.class_lookup[type_] = mo.group(3).strip()
-        class_ = self.class_lookup.get(type_, "")
+        reg, type_, class_ = (X.strip() if X else ""
+                              for X in mo.group(1, 2, 3))
+        if class_:
+            self.class_lookup[type_] = class_
+        else:
+            class_ = self.class_lookup.get(type_, "")
         self.aircraft = Aircraft(reg, type_, class_)
         return self.aircraft
 
