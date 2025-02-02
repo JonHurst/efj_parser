@@ -4,6 +4,60 @@ import datetime as dt
 import efj_parser as efj
 
 
+class TestRegexp(unittest.TestCase):
+
+    def test_shortdate(self):
+        f = efj.Parser._Parser__RE_SHORTDATE.fullmatch
+        # Next day
+        self.assertEqual(f("+").group(1), "+")
+        # Next next next day
+        self.assertEqual(f("+++").group(1), "+++")
+        # Can only be +
+        self.assertIsNone(f("++-+"))
+        # Empty gives None
+        self.assertIsNone(f(""))
+
+    def test_date(self):
+        f = efj.Parser._Parser__RE_DATE.fullmatch
+        self.assertEqual(f("2025-01-01").group(1), "2025-01-01")
+        # Must be ISO format
+        self.assertIsNone(f("01/01/2025"))
+        # Bad dates are OK -- will be detected when processing
+        self.assertEqual(f("2025-21-01").group(1), "2025-21-01")
+        # Can't be anything on the end
+        self.assertIsNone(f("2025-01-01A"))
+        # ... or the start
+        self.assertIsNone(f("A2025-01-01"))
+        # Dashes are mandatory
+        self.assertIsNone(f("20250101"))
+        # Empty gives None
+        self.assertIsNone(f(""))
+
+    def test_aircraft(self):
+        f = efj.Parser._Parser__RE_AIRCRAFT.fullmatch
+        for class_ in ["mc", "spse", "spme"]:
+            self.assertEqual(
+                f("G-ABCD:A320:" + class_).group(1, 2, 3),
+                ("G-ABCD", "A320", class_)
+            )
+        # Other classes are no good
+        self.assertIsNone(f("G-ABCD:A320:mcme"))
+        # No class is fine
+        self.assertEqual(
+            f("G-ABCD:A320").group(1, 2, 3),
+            ("G-ABCD", "A320", None)
+        )
+        # ... unless there is a trailing colon
+        self.assertIsNone(f("G-ABCD:A320:"))
+        # Space around colons is fine
+        self.assertEqual(
+            f("G-ABCD : A320 : mc").group(1, 2, 3),
+            ("G-ABCD", "A320", "mc")
+        )
+        # Empty gives None
+        self.assertIsNone(f(""))
+
+
 class TestParser(unittest.TestCase):
 
     def test_basic(self):
