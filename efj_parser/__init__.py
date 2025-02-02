@@ -309,6 +309,8 @@ def _split_flags(flag_str: str) -> Flags:
 
 def _join_flags(flags: Flags) -> tuple[str, ...]:
     """Join Flags into a tuple of str"""
+    if not flags:
+        return ()
     return tuple(f"{X[0]}:{X[1]}" if X[1] else X[0] for X in flags)
 
 
