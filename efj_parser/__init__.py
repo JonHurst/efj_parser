@@ -207,8 +207,6 @@ class Parser():
             for m in self.crewlist:
                 if m.role == "CP":
                     captains.append(m.name)
-        if not captains:
-            raise _VE("No Captain specified")
         return ", ".join(captains)
 
     def __parse_sector(self, mo: re.Match) -> Sector:
@@ -233,11 +231,13 @@ class Parser():
             raise _VE("Bad flags")
         conditions, roles, landings, unused_flags = (
             self.__parse_sector_flags(flags, duration))
+        captain = self.__captain(roles, duration)
+        if not captain:
+            raise _VE("No Captain specified")
         return Sector(
             start, duration, roles, conditions,
             landings, self.aircraft, self.airports,
-            self.__captain(roles, duration),
-            _join_flags(unused_flags),
+            captain, _join_flags(unused_flags),
             comment,
             tuple(self.crewlist))
 
