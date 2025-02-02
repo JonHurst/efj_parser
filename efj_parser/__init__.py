@@ -103,7 +103,6 @@ class Parser():
         self.airports = Airports("", "")
         self.aircraft = Aircraft("", "", "")
         self.class_lookup: dict[str, str] = {}
-        self.captain = ""
         self.crewlist: list[Crewmember] = []
 
     def __parse_date(self, mo: re.Match) -> dt.date:
@@ -170,20 +169,7 @@ class Parser():
                 self.crewlist.append(Crewmember(role, name))
         except ValueError:
             raise _VE("Incorrect crew listing format")
-        captains = [X.name for X in self.crewlist if X.role == "CP"]
-        if captains:
-            self.captain = ", ".join(captains)
         return self.crewlist
-
-    def __pre_validate_sector(self, mo: re.Match) -> None:
-        if not self.date:
-            raise _VE("Sector with no preceding Date entry")
-        if not (self.aircraft.reg and self.aircraft.type_):
-            raise _VE("Sector with no preceding Aircraft entry")
-        if not mo.group(1) and not self.airports.dest:  # Blank destination
-            raise _VE("Blank From without previous To")
-        if not mo.group(2) and not self.airports.origin:  # Blank origin
-            raise _VE("Blank To without previous From")
 
     def __parse_sector_times(
             self, t_start: str, t_end: str
@@ -215,36 +201,42 @@ class Parser():
                                                        conditions.night)
         return conditions, roles, landings, unused_flags
 
+    def __captain(self, roles, duration) -> str:
+        captains = ["Self"] if roles.p1 else []
+        if roles.p1 < duration:
+            for m in self.crewlist:
+                if m.role == "CP":
+                    captains.append(m.name)
+        if not captains:
+            raise _VE("No Captain specified")
+        return ", ".join(captains)
+
     def __parse_sector(self, mo: re.Match) -> Sector:
-        self.__pre_validate_sector(mo)
-        self.airports = Airports(mo.group(1) or self.airports.dest,
-                                 mo.group(2) or self.airports.origin)
-        start, duration = self.__parse_sector_times(mo.group(3), mo.group(4))
+        if not self.date:
+            raise _VE("Sector with no preceding Date entry")
+        if not (self.aircraft.reg and self.aircraft.type_):
+            raise _VE("Sector with no preceding Aircraft entry")
+        (origin, dest, start_str, end_str, flag_str, comment
+         ) = (X.strip() if X else "" for X in mo.group(*range(1, 7)))
+        self.airports = Airports(
+            origin or self.airports.dest,
+            dest or self.airports.origin
+        )
+        if not self.airports.origin:
+            raise _VE("Blank From without previous To")
+        if not self.airports.dest:
+            raise _VE("Blank To without previous From")
+        start, duration = self.__parse_sector_times(start_str, end_str)
         try:
-            flags = _split_flags(mo.group(5))
+            flags = _split_flags(flag_str)
         except ValueError:
             raise _VE("Bad flags")
         conditions, roles, landings, unused_flags = (
             self.__parse_sector_flags(flags, duration))
-        if roles.p1 == duration:
-            self.captain = "Self"
-        else:
-            if not self.captain:
-                raise _VE("No Captain specified")
-            if roles.p1:
-                self.captain = f"Self, {self.captain}"
-        comment = ""
-        if mo.group(6):  # Comment
-            comment = mo.group(6).strip()
         return Sector(
-            start,
-            duration,
-            roles,
-            conditions,
-            landings,
-            self.aircraft,
-            self.airports,
-            self.captain,
+            start, duration, roles, conditions,
+            landings, self.aircraft, self.airports,
+            self.__captain(roles, duration),
             _join_flags(unused_flags),
             comment,
             tuple(self.crewlist))
