@@ -300,7 +300,9 @@ def _split_flags(flag_str: str) -> Flags:
     :returns: tuple of pairs like (("p2", 20), ("ln", 1), ("ins", None), ...)
     :raises: ValueError if RHS of : is not convertible to integer
     """
-    fields = flag_str.strip().split()
+    fields = flag_str.split()
+    if not fields:
+        return ()
     return tuple((L[0], int(L[1])) if len(L) == 2 else (L[0], None)
                  for L in (X.split(":", 1) for X in fields))
 
