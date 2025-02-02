@@ -129,7 +129,7 @@ class Parser():
                 ftl_correction += f[1] if f[1] else duration
             else:
                 unused_flags.append(f)
-        comment = mo.group(4)[1:].strip() if mo.group(4) else ""
+        comment = mo.group(4).strip() if mo.group(4) else ""
         return Duty(dt_start, duration, ftl_correction,
                     _join_flags(tuple(unused_flags)), comment)
 
@@ -223,7 +223,7 @@ class Parser():
                 self.captain = f"Self, {self.captain}"
         comment = ""
         if mo.group(6):  # Comment
-            comment = mo.group(6)[1:].strip()
+            comment = mo.group(6).strip()
         return Sector(
             start,
             duration,
@@ -288,7 +288,7 @@ class Parser():
                     hook and hook(line, c + 1, entry_type, cast(ParseRet, ret))
                     break
             else:
-                raise _VE("Bad syntax")
+                raise ValidationError(c + 1, "Bad syntax", line)
             if isinstance(ret, Duty):
                 duties.append(ret)
             elif isinstance(ret, Sector):
