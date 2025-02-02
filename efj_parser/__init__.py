@@ -88,6 +88,16 @@ Flags = tuple[Flag, ...]
 
 class Parser():
     """Parser for electronic Flight Journal (eFJ) files."""
+
+    __RE_SECTOR = re.compile(r"(\w*)/(\w*)\s*(\d{4})/(\d{4})([^#]*+)#?(.*)")
+    __RE_CREWLIST = re.compile(r"\{([^}]*)}")
+    __RE_DATE = re.compile(r"(\d{4}-\d{2}-\d{2})")
+    __RE_AIRCRAFT = re.compile(r"([-\w]{2,10})(?>\s*:\s*)([-\w]+)"
+                               r"(?:\s*:\s*(mc|spse|spme))?")
+    __RE_DUTY = re.compile(r"(\d{4})/(\d{4})([^#]*+)#?(.*)")
+    __RE_SHORTDATE = re.compile(r"(\++)")
+    __RE_COMMENT = re.compile(r"#(.*)")
+
     def __init__(self) -> None:
         self.date: Optional[dt.date] = None
         self.airports = Airports("", "")
@@ -240,8 +250,10 @@ class Parser():
     def __parse_comment(self, mo: re.Match) -> str:
         return mo.group(1) or ""
 
-    def parse(self, s: str, hook: ParseHook = None
-              ) -> tuple[tuple[Duty, ...], tuple[Sector, ...]]:
+    def parse(
+            self, s: str,
+            hook: ParseHook = None
+    ) -> tuple[tuple[Duty, ...], tuple[Sector, ...]]:
         """Extract duties and sectors from an eFJ string
 
         :param s: A string containing data in eFJ format
@@ -257,21 +269,13 @@ class Parser():
         duties: list[Duty] = []
         sectors: list[Sector] = []
         func_map = [
-            (re.compile(r"(\w*)/(\w*)\s*(\d{4})/(\d{4})([^#]*+)#?(.*)"),
-             self.__parse_sector, "sector"),
-            (re.compile(r"\{([^}]*)}"),
-             self.__parse_crewlist, "crewlist"),
-            (re.compile(r"(\d{4}-\d{2}-\d{2})"),
-             self.__parse_date, "date"),
-            (re.compile(r"(\d{4})/(\d{4})([^#]*+)#?(.*)"),
-             self.__parse_duty, "duty"),
-            (re.compile(r"([-\w]{2,10})(?>\s*:\s*)([-\w]+)"
-                        r"(?:\s*:\s*(mc|spse|spme))?"),
-             self.__parse_aircraft, "aircraft"),
-            (re.compile(r"(\++)"),
-             self.__parse_nextdate, "short_date"),
-            (re.compile(r"#(.*)"),
-             self.__parse_comment, "comment"),
+            (Parser.__RE_SECTOR, self.__parse_sector, "sector"),
+            (Parser.__RE_CREWLIST, self.__parse_crewlist, "crewlist"),
+            (Parser.__RE_DATE, self.__parse_date, "date"),
+            (Parser.__RE_DUTY, self.__parse_duty, "duty"),
+            (Parser.__RE_AIRCRAFT, self.__parse_aircraft, "aircraft"),
+            (Parser.__RE_SHORTDATE, self.__parse_nextdate, "short_date"),
+            (Parser.__RE_COMMENT, self.__parse_comment, "comment"),
         ]
         for c, line in enumerate(s.splitlines()):
             line = line.strip()
