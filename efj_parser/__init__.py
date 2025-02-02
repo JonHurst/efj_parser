@@ -174,18 +174,16 @@ class Parser():
     def __parse_sector_times(
             self, t_start: str, t_end: str
     ) -> tuple[dt.datetime, int]:
+        assert self.date
         try:
             ts = dt.time.fromisoformat(t_start)  # Off blocks
             te = dt.time.fromisoformat(t_end)  # On blocks
         except ValueError:
             raise _VE("Incorrect time field")
-        start = dt.datetime.combine(cast(dt.date, self.date), ts)
-        duration = int(
-            (dt.datetime.combine(cast(dt.date, self.date), te) - start)
-            .total_seconds() // 60)
+        duration = (te.hour - ts.hour) * 60 + (te.minute - ts.minute)
         if duration < 0:
             duration += 1440
-        return (start, duration)
+        return (dt.datetime.combine(self.date, ts), duration)
 
     def __parse_sector_flags(
             self,
