@@ -57,6 +57,16 @@ class TestRegexp(unittest.TestCase):
         # Empty gives None
         self.assertIsNone(f(""))
 
+    def test_comment(self):
+        f = efj.Parser._Parser__RE_COMMENT.fullmatch
+        self.assertEqual(f("# my comment").group(1), " my comment")
+        # Multiple #
+        self.assertEqual(f("## my #comment").group(1), "# my #comment")
+        # Empty comment
+        self.assertEqual(f("#").group(1), "")
+        # Empty
+        self.assertIsNone(f(""))
+
 
 class TestParser(unittest.TestCase):
 
