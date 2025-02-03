@@ -1,4 +1,5 @@
 import re
+from enum import IntEnum
 from typing import NamedTuple, Optional, Callable, Union, cast
 import datetime as dt
 
@@ -77,7 +78,38 @@ class ValidationError(Exception):
 
 class _VE(Exception):
 
-    def __init__(self, message): self.message = message
+    class Code(IntEnum):
+        BAD_CREWLIST = 100
+        BAD_DATE = 110
+        BAD_FLAGS = 120
+        BAD_ROLE_FLAGS = 121
+        BAD_CONDITION_FLAGS = 122
+        BAD_SYNTAX = 130
+        BAD_TIME = 140
+        MISSING_AIRCRAFT = 200
+        MISSING_CAPTAIN = 210
+        MISSING_DATE = 220
+        MISSING_DEST = 230
+        MISSING_ORIGIN = 240
+
+    message_lookup = {
+        Code.BAD_CREWLIST: "Invalid crew list",
+        Code.BAD_DATE: "Invalid date format",
+        Code.BAD_FLAGS: "Invalid flags",
+        Code.BAD_ROLE_FLAGS: "Invalid role flags",
+        Code.BAD_CONDITION_FLAGS: "Invalid flight condition flags",
+        Code.BAD_SYNTAX: "Invalid syntax",
+        Code.BAD_TIME: "Invalid time format",
+        Code.MISSING_AIRCRAFT: "Prior aircraft specifier required",
+        Code.MISSING_AIRCRAFT: "No Captain specified",
+        Code.MISSING_DATE: "Prior date specifier required",
+        Code.MISSING_DEST: "No destination airfield specified",
+        Code.MISSING_ORIGIN: "No origin airfield specified",
+    }
+
+    def __init__(self, code: Code):
+        self.code = code
+        self.message = _VE.message_lookup.get(code, "Unknown error")
 
 
 ParseRet = Union[dt.date, Duty, Aircraft, list[Crewmember], Sector, str]
@@ -110,24 +142,24 @@ class Parser():
             self.date = dt.date.fromisoformat(mo.group(1))
             return self.date
         except ValueError:
-            raise _VE("Incorrect Date entry")
+            raise _VE(_VE.Code.BAD_DATE)
 
     def __parse_nextdate(self, mo: re.Match) -> dt.date:
         if not self.date:
-            raise _VE("Short date without preceding Date entry")
+            raise _VE(_VE.Code.MISSING_DATE)
         self.date += dt.timedelta(len(mo.group(1)))
         return self.date
 
     def __parse_duty(self, mo: re.Match) -> Duty:
         if not self.date:
-            raise _VE("Duty entry without preceding Date entry")
+            raise _VE(_VE.Code.MISSING_DATE)
         start_str, end_str, flags, comment = (
             X.strip() if X else "" for X in mo.group(1, 2, 3, 4))
         try:
             t_start = dt.time.fromisoformat(start_str)
             t_end = dt.time.fromisoformat(end_str)
         except ValueError:
-            raise _VE("Invalid time string")
+            raise _VE(_VE.Code.BAD_TIME)
         dt_start = dt.datetime.combine(self.date, t_start)
         duration = ((t_end.hour - t_start.hour) * 60 +
                     (t_end.minute - t_start.minute))
@@ -169,7 +201,7 @@ class Parser():
                     raise ValueError
                 self.crewlist.append(Crewmember(role, name))
         except ValueError:
-            raise _VE("Incorrect crew listing format")
+            raise _VE(_VE.Code.BAD_CREWLIST)
         return self.crewlist
 
     def __parse_sector_times(
@@ -180,7 +212,7 @@ class Parser():
             ts = dt.time.fromisoformat(t_start)  # Off blocks
             te = dt.time.fromisoformat(t_end)  # On blocks
         except ValueError:
-            raise _VE("Incorrect time field")
+            raise _VE(_VE.Code.BAD_TIME)
         duration = (te.hour - ts.hour) * 60 + (te.minute - ts.minute)
         if duration < 0:
             duration += 1440
@@ -210,9 +242,9 @@ class Parser():
 
     def __parse_sector(self, mo: re.Match) -> Sector:
         if not self.date:
-            raise _VE("Sector with no preceding Date entry")
+            raise _VE(_VE.Code.MISSING_DATE)
         if not (self.aircraft.reg and self.aircraft.type_):
-            raise _VE("Sector with no preceding Aircraft entry")
+            raise _VE(_VE.Code.MISSING_AIRCRAFT)
         (origin, dest, start_str, end_str, flag_str, comment
          ) = (X.strip() if X else "" for X in mo.group(*range(1, 7)))
         self.airports = Airports(
@@ -220,19 +252,19 @@ class Parser():
             dest or self.airports.origin
         )
         if not self.airports.origin:
-            raise _VE("Blank From without previous To")
+            raise _VE(_VE.Code.MISSING_DEST)
         if not self.airports.dest:
-            raise _VE("Blank To without previous From")
+            raise _VE(_VE.Code.MISSING_ORIGIN)
         start, duration = self.__parse_sector_times(start_str, end_str)
         try:
             flags = _split_flags(flag_str)
         except ValueError:
-            raise _VE("Bad flags")
+            raise _VE(_VE.Code.BAD_FLAGS)
         conditions, roles, landings, unused_flags = (
             self.__parse_sector_flags(flags, duration))
         captain = self.__captain(roles, duration)
         if not captain:
-            raise _VE("No Captain specified")
+            raise _VE(_VE.Code.MISSING_CAPTAIN)
         return Sector(
             start, duration, roles, conditions,
             landings, self.aircraft, self.airports,
@@ -285,7 +317,8 @@ class Parser():
                     hook and hook(line, c + 1, entry_type, cast(ParseRet, ret))
                     break
             else:
-                raise ValidationError(c + 1, "Bad syntax", line)
+                raise ValidationError(
+                    c + 1, _VE(_VE.Code.BAD_SYNTAX).message, line)
             if isinstance(ret, Duty):
                 duties.append(ret)
             elif isinstance(ret, Sector):
@@ -365,12 +398,12 @@ def _process_roles(flags: Flags, duration: int) -> tuple[Roles, Flags]:
             case "ins":
                 ins += f[1] if f[1] else duration
                 if ins > duration:
-                    raise _VE("Bad instructor flag")
+                    raise _VE(_VE.Code.BAD_ROLE_FLAGS)
             case _:
                 unused.append(f)
     p1 = duration - (p1s + p2 + put + p0)
     if p1 < 0:
-        raise _VE("Too many roles")
+        raise _VE(_VE.Code.BAD_ROLE_FLAGS)
     return Roles(p1, p1s, p2, put, ins), tuple(unused)
 
 
@@ -389,11 +422,11 @@ def _process_conditions(flags: Flags, dur: int) -> tuple[Conditions, Flags]:
             case "n":
                 night += f[1] if f[1] else dur
                 if night > dur:
-                    raise _VE("Night duration more than flight duration")
+                    raise _VE(_VE.Code.BAD_CONDITION_FLAGS)
             case "v":
                 vfr += f[1] if f[1] else dur
                 if vfr > dur:
-                    raise _VE("VFR duration more than flight duration")
+                    raise _VE(_VE.Code.BAD_CONDITION_FLAGS)
             case _:
                 unused.append(f)
     return Conditions(night, dur - vfr), tuple(unused)

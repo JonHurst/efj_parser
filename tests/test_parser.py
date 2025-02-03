@@ -269,21 +269,21 @@ BRS/BFS 1100/1200 v n:30
                 efj.Parser().parse(data)
             self.assertEqual(
                 str(e.exception),
-                "Line 1: [Incorrect crew listing format] {just a string}")
+                "Line 1: [Invalid crew list] {just a string}")
         with self.subTest("No name"):
             data = "2024-01-22\n{CP:, FO:Bloggs}"
             with self.assertRaises(efj.ValidationError) as e:
                 efj.Parser().parse(data)
             self.assertEqual(
                 str(e.exception),
-                "Line 2: [Incorrect crew listing format] {CP:, FO:Bloggs}")
+                "Line 2: [Invalid crew list] {CP:, FO:Bloggs}")
         with self.subTest("No comma"):
             data = "{ CP: Bloggs1 FO:Bloggs2}"
             with self.assertRaises(efj.ValidationError) as e:
                 efj.Parser().parse(data)
             self.assertEqual(
                 str(e.exception),
-                "Line 1: [Incorrect crew listing format]"
+                "Line 1: [Invalid crew list]"
                 " { CP: Bloggs1 FO:Bloggs2}")
         with self.subTest("No colon"):
             data = "{just a, string}"
@@ -291,14 +291,14 @@ BRS/BFS 1100/1200 v n:30
                 efj.Parser().parse(data)
             self.assertEqual(
                 str(e.exception),
-                "Line 1: [Incorrect crew listing format] {just a, string}")
+                "Line 1: [Invalid crew list] {just a, string}")
         with self.subTest("Multi word role"):
             data = "{just a: string}"
             with self.assertRaises(efj.ValidationError) as e:
                 efj.Parser().parse(data)
             self.assertEqual(
                 str(e.exception),
-                "Line 1: [Incorrect crew listing format] {just a: string}")
+                "Line 1: [Invalid crew list] {just a: string}")
 
     def test_bad_date(self):
         data = "2024-02-30"
@@ -306,7 +306,7 @@ BRS/BFS 1100/1200 v n:30
             efj.Parser().parse(data)
         self.assertEqual(
             str(e.exception),
-            "Line 1: [Incorrect Date entry] 2024-02-30")
+            "Line 1: [Invalid date format] 2024-02-30")
 
     def test_bad_nextdate(self):
         data = "2024-02-01\n++-"
@@ -314,7 +314,7 @@ BRS/BFS 1100/1200 v n:30
             efj.Parser().parse(data)
         self.assertEqual(
             str(e.exception),
-            "Line 2: [Bad syntax] ++-")
+            "Line 2: [Invalid syntax] ++-")
 
     def test_bad_duty(self):
         with self.subTest("No preceding date"):
@@ -323,21 +323,21 @@ BRS/BFS 1100/1200 v n:30
                 efj.Parser().parse(data)
             self.assertEqual(
                 str(e.exception),
-                "Line 1: [Duty entry without preceding Date entry] 1000/1100")
+                "Line 1: [Prior date specifier required] 1000/1100")
         with self.subTest("Bad time format"):
             data = "2024-02-01\n2200/2400"
             with self.assertRaises(efj.ValidationError) as e:
                 efj.Parser().parse(data)
             self.assertEqual(
                 str(e.exception),
-                "Line 2: [Invalid time string] 2200/2400")
+                "Line 2: [Invalid time format] 2200/2400")
         with self.subTest("Hyphen instead of slash"):
             data = "2024-02-01\n2200-2400"
             with self.assertRaises(efj.ValidationError) as e:
                 efj.Parser().parse(data)
             self.assertEqual(
                 str(e.exception),
-                "Line 2: [Bad syntax] 2200-2400")
+                "Line 2: [Invalid syntax] 2200-2400")
 
 
 class TestSectorFlags (unittest.TestCase):
@@ -433,11 +433,11 @@ class TestSectorFlags (unittest.TestCase):
         with self.subTest("Role duration > duration"):
             with self.assertRaises(efj._VE) as ve:
                 efj._process_roles((("p1s", 2),), 1)
-                self.assertEqual(ve.exception.message, "Too many roles")
+                self.assertEqual(ve.exception.message, "Invalid role flags")
         with self.subTest("Two untimed roles"):
             with self.assertRaises(efj._VE) as ve:
                 efj._process_roles((("p1s", None), ("put", None)), 1)
-            self.assertEqual(ve.exception.message, "Too many roles")
+            self.assertEqual(ve.exception.message, "Invalid role flags")
         with self.subTest("Instructor flag"):
             self.assertEqual(
                 efj._process_roles((("ins", None),), 1),
@@ -480,12 +480,12 @@ class TestSectorFlags (unittest.TestCase):
             with self.assertRaises(efj._VE) as ve:
                 efj._process_conditions((("v", 2),), 1),
             self.assertEqual(ve.exception.message,
-                             "VFR duration more than flight duration")
+                             "Invalid flight condition flags")
         with self.subTest("Night duration > duration"):
             with self.assertRaises(efj._VE) as ve:
                 efj._process_conditions((("n", 2),), 1),
             self.assertEqual(ve.exception.message,
-                             "Night duration more than flight duration")
+                             "Invalid flight condition flags")
 
 
 class TestUtility(unittest.TestCase):
