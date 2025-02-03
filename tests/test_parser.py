@@ -47,7 +47,7 @@ class TestRegexp(unittest.TestCase):
             f("G-ABCD:A320").group(1, 2, 3),
             ("G-ABCD", "A320", None)
         )
-        # ... unless there is a trailing colon
+        # ... although trailing colon not allowed
         self.assertIsNone(f("G-ABCD:A320:"))
         # Space around colons is fine
         self.assertEqual(
