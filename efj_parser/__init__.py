@@ -121,12 +121,25 @@ Flags = tuple[Flag, ...]
 class Parser():
     """Parser for electronic Flight Journal (eFJ) files."""
 
-    __RE_SECTOR = re.compile(r"(\w*)/(\w*)\s*(\d{4})/(\d{4})([^#]*+)#?(.*)")
+    __RE_SECTOR = re.compile(
+        r"""(\w*)/(\w*)        # origin/dest (both optional)
+            \s+(\d{4})/(\d{4}) # times
+            (?>\s+([^#]+))?    # flags
+            (?>\s*\#(.*))?      # comment
+        """, re.VERBOSE)
     __RE_CREWLIST = re.compile(r"\{([^}]*)}")
     __RE_DATE = re.compile(r"(\d{4}-\d{2}-\d{2})")
     __RE_AIRCRAFT = re.compile(
-        r"(?>([-\w]+)\s*:\s*([-\w]+))(?:\s*:\s*(mc|spse|spme))?")
-    __RE_DUTY = re.compile(r"(\d{4})/(\d{4})([^#]*+)#?(.*)")
+        r"""(?>([-\w]+)       # registration
+            \s*:\s*
+            ([-\w]+))         # type
+            (?:\s*:\s*
+            (mc|spse|spme))?  # optional class""", re.VERBOSE)
+    __RE_DUTY = re.compile(
+        r"""(\d{4})/(\d{4})   # times
+            (?>\s+([^#]+))?   # flags
+            (?>\s*\#(.*))?    # comment
+        """, re.VERBOSE)
     __RE_SHORTDATE = re.compile(r"(\++)")
     __RE_COMMENT = re.compile(r"#(.*)")
 

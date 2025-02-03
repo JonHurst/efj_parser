@@ -81,8 +81,55 @@ class TestRegexp(unittest.TestCase):
 
     def test_duty(self):
         f = efj.Parser._Parser__RE_DUTY.fullmatch
+        # just times
         self.assertEqual(f("1000/1100").group(1, 2, 3, 4),
-                         ("1000", "1100", "", ""))
+                         ("1000", "1100", None, None))
+        # with a comment
+        self.assertEqual(f("1000/1100 # test").group(1, 2, 3, 4),
+                         ("1000", "1100", None, " test"))
+        # with flags
+        self.assertEqual(f("1000/1100 r a:10").group(1, 2, 3, 4),
+                         ("1000", "1100", "r a:10", None))
+        # comment and flags
+        self.assertEqual(f("1000/1100 r:30 # test").group(1, 2, 3, 4),
+                         ("1000", "1100", "r:30 ", " test"))
+        # empty
+        self.assertIsNone(f(""))
+        # flag without space
+        self.assertIsNone(f("1000/1100r "))
+        # times with suffix
+        self.assertIsNone(f("1000z/1100z "))
+        # letters
+        self.assertIsNone(f("abcd/efgh"))
+
+    def test_sector(self):
+        f = efj.Parser._Parser__RE_SECTOR.fullmatch
+        # simplest
+        self.assertEqual(
+            f("BRS/FNC 1000/1300").group(1, 2, 3, 4, 5, 6),
+            ("BRS", "FNC", "1000", "1300", None, None))
+        # flags
+        self.assertEqual(
+            f("BRS/FNC 1000/1300 n:30 m").group(1, 2, 3, 4, 5, 6),
+            ("BRS", "FNC", "1000", "1300", "n:30 m", None))
+        # comment
+        self.assertEqual(
+            f("BRS/FNC 1000/1300 #  test").group(1, 2, 3, 4, 5, 6),
+            ("BRS", "FNC", "1000", "1300", None, "  test"))
+        # flags and comment
+        self.assertEqual(
+            f("BRS/FNC 1000/1300 m#  test").group(1, 2, 3, 4, 5, 6),
+            ("BRS", "FNC", "1000", "1300", "m", "  test"))
+        # underscore
+        self.assertEqual(
+            f("my_house/FNC 1000/1300"). group(1, 2, 3, 4, 5, 6),
+            ("my_house", "FNC", "1000", "1300", None, None))
+        # no underscore
+        self.assertIsNone(f("my house/FNC 1000/1300"))
+        # time zones
+        self.assertIsNone(f("BRS/FNC 1000z/1300z"))
+        # empty
+        self.assertIsNone(f(""))
 
 
 class TestParser(unittest.TestCase):
