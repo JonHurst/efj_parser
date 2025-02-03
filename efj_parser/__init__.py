@@ -221,10 +221,11 @@ class Parser():
             self, t_start: str, t_end: str
     ) -> tuple[dt.datetime, int]:
         assert self.date
+        assert t_start.isnumeric() and t_end.isnumeric()
         try:
             ts = dt.time.fromisoformat(t_start)  # Off blocks
             te = dt.time.fromisoformat(t_end)  # On blocks
-        except ValueError:
+        except (ValueError, TypeError):
             raise _VE(_VE.Code.BAD_TIME)
         duration = (te.hour - ts.hour) * 60 + (te.minute - ts.minute)
         if duration < 0:
