@@ -67,6 +67,18 @@ class TestRegexp(unittest.TestCase):
         # Empty
         self.assertIsNone(f(""))
 
+    def test_crew(self):
+        f = efj.Parser._Parser__RE_CREWLIST.fullmatch
+        self.assertEqual(f("{ cp: Pugwash, fo: Bloggs}").group(1),
+                         " cp: Pugwash, fo: Bloggs")
+        # Double close shouldn't match
+        self.assertIsNone(f("{ cp: Pugwash, fo: Bloggs}}"))
+        # Otherwise pretty much anything goes -- errors detected later
+        self.assertEqual(f("{{sdkfjl cp: :fo}").group(1),
+                         "{sdkfjl cp: :fo")
+        # Empty
+        self.assertIsNone(f(""))
+
 
 class TestParser(unittest.TestCase):
 
