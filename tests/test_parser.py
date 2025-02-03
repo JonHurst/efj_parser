@@ -79,6 +79,11 @@ class TestRegexp(unittest.TestCase):
         # Empty
         self.assertIsNone(f(""))
 
+    def test_duty(self):
+        f = efj.Parser._Parser__RE_DUTY.fullmatch
+        self.assertEqual(f("1000/1100").group(1, 2, 3, 4),
+                         ("1000", "1100", "", ""))
+
 
 class TestParser(unittest.TestCase):
 
