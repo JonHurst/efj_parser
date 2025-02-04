@@ -85,8 +85,8 @@ class TestRegexp(unittest.TestCase):
         self.assertEqual(f("1000/1100").group(1, 2, 3, 4),
                          ("1000", "1100", None, None))
         # with a comment
-        self.assertEqual(f("1000/1100 # test").group(1, 2, 3, 4),
-                         ("1000", "1100", None, " test"))
+        self.assertEqual(f("1000/1100#test").group(1, 2, 3, 4),
+                         ("1000", "1100", None, "test"))
         # with flags
         self.assertEqual(f("1000/1100 r a:10").group(1, 2, 3, 4),
                          ("1000", "1100", "r a:10", None))
