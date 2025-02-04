@@ -159,6 +159,7 @@ class Parser():
             raise _VE(_VE.Code.BAD_DATE)
 
     def __parse_nextdate(self, mo: re.Match) -> dt.date:
+        assert mo
         if not self.date:
             raise _VE(_VE.Code.MISSING_DATE)
         self.date += dt.timedelta(len(mo.group(1)))

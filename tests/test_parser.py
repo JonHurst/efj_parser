@@ -620,3 +620,16 @@ class TestPrivateMethods(unittest.TestCase):
         if __debug__:
             with self.assertRaises(AssertionError):
                 efj.Parser._Parser__parse_date(parser, None)
+
+    def test_nextdate(self):
+        parser = efj.Parser()
+        parser.date = dt.date(2024, 12, 31)
+        mo = efj.Parser._Parser__RE_SHORTDATE.fullmatch("+")
+        efj.Parser._Parser__parse_nextdate(parser, mo)
+        self.assertEqual(parser.date, dt.date(2025, 1, 1))
+        mo = efj.Parser._Parser__RE_SHORTDATE.fullmatch("+++")
+        efj.Parser._Parser__parse_nextdate(parser, mo)
+        self.assertEqual(parser.date, dt.date(2025, 1, 4))
+        if __debug__:
+            with self.assertRaises(AssertionError):
+                efj.Parser._Parser__parse_nextdate(parser, None)
