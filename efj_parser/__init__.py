@@ -151,6 +151,7 @@ class Parser():
         self.crewlist: list[Crewmember] = []
 
     def __parse_date(self, mo: re.Match) -> dt.date:
+        assert mo
         try:
             self.date = dt.date.fromisoformat(mo.group(1))
             return self.date

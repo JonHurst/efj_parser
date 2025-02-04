@@ -606,3 +606,17 @@ class TestPrivateMethods(unittest.TestCase):
             with self.assertRaises(efj._VE) as e:
                 efj.Parser._Parser__parse_times(parser, None, "1100")
             self.assertEqual(e.exception.code, efj._VE.Code.BAD_TIME)
+
+    def test_parse_date(self):
+        parser = efj.Parser()
+        mo = efj.Parser._Parser__RE_DATE.fullmatch("2025-01-01")
+        self.assertEqual(
+            efj.Parser._Parser__parse_date(parser, mo),
+            dt.date(2025, 1, 1))
+        mo = efj.Parser._Parser__RE_DATE.fullmatch("2025-21-01")
+        with self.assertRaises(efj._VE) as e:
+            efj.Parser._Parser__parse_date(parser, mo)
+        self.assertEqual(e.exception.code, efj._VE.Code.BAD_DATE)
+        if __debug__:
+            with self.assertRaises(AssertionError):
+                efj.Parser._Parser__parse_date(parser, None)
