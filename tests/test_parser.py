@@ -674,3 +674,25 @@ class TestPrivateMethods(unittest.TestCase):
         res = efj.Parser._Parser__parse_aircraft(parser, mo)
         exp = efj.Aircraft("GA-BC-DE", "A-320-neo", "")
         self.assertEqual(res, exp)
+
+    def test_crewlist(self):
+        parser = efj.Parser()
+        c = efj.Parser._Parser__RE_CREWLIST.fullmatch
+        f = efj.Parser._Parser__parse_crewlist
+        res = f(parser, c("{ cp: pugwash, fo: bloggs}"))
+        exp = [
+            efj.Crewmember("cp", "pugwash"),
+            efj.Crewmember("fo", "bloggs")
+        ]
+        self.assertEqual(res, exp)
+        res = efj.Parser._Parser__parse_crewlist(parser, c("{}"))
+        self.assertEqual(res, [])
+        with self.assertRaises(efj._VE) as e:
+            f(parser, c("{ cp: fo: bloggs }"))
+        self.assertEqual(e.exception.code, efj._VE.Code.BAD_CREWLIST)
+        with self.assertRaises(efj._VE) as e:
+            f(parser, c("{ cp fo: bloggs }"))
+        self.assertEqual(e.exception.code, efj._VE.Code.BAD_CREWLIST)
+        with self.assertRaises(efj._VE) as e:
+            f(parser, c("{{sdkfjl cp: :fo}"))
+        self.assertEqual(e.exception.code, efj._VE.Code.BAD_CREWLIST)
