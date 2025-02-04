@@ -663,3 +663,14 @@ class TestPrivateMethods(unittest.TestCase):
         if __debug__:
             with self.assertRaises(AssertionError):
                 efj.Parser._Parser__parse_duty(parser, None)
+
+    def test_aircraft(self):
+        parser = efj.Parser()
+        mo = efj.Parser._Parser__RE_AIRCRAFT.fullmatch("G-ABCD:A320:mc")
+        res = efj.Parser._Parser__parse_aircraft(parser, mo)
+        exp = efj.Aircraft("G-ABCD", "A320", "mc")
+        self.assertEqual(res, exp)
+        mo = efj.Parser._Parser__RE_AIRCRAFT.fullmatch("GA-BC-DE : A-320-neo")
+        res = efj.Parser._Parser__parse_aircraft(parser, mo)
+        exp = efj.Aircraft("GA-BC-DE", "A-320-neo", "")
+        self.assertEqual(res, exp)

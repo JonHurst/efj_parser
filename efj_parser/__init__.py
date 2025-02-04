@@ -183,6 +183,7 @@ class Parser():
                     _join_flags(tuple(unused_flags)), comment)
 
     def __parse_aircraft(self, mo: re.Match) -> Aircraft:
+        assert mo
         reg, type_, class_ = (X.strip() if X else ""
                               for X in mo.group(1, 2, 3))
         if class_:
