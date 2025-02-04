@@ -696,3 +696,63 @@ class TestPrivateMethods(unittest.TestCase):
         with self.assertRaises(efj._VE) as e:
             f(parser, c("{{sdkfjl cp: :fo}"))
         self.assertEqual(e.exception.code, efj._VE.Code.BAD_CREWLIST)
+
+    def test_sector(self):
+        parser = efj.Parser()
+        default_sector = efj.Sector(
+            start=dt.datetime(2025, 1, 1, 10),
+            total=60,
+            roles=efj.Roles(p1=60),
+            conditions=efj.Conditions(ifr=60),
+            landings=efj.Landings(1, 0),
+            aircraft=efj.Aircraft("G-ABCD", "A320", ""),
+            airports=efj.Airports("BRS", "FNC"),
+            captain="Self",
+            extra_flags=(),
+            comment="",
+            crew=())
+        r = efj.Parser._Parser__RE_SECTOR.fullmatch
+        f = efj.Parser._Parser__parse_sector
+        # parse errors
+        parser.date = dt.date(2025, 1, 1)
+        with self.assertRaises(efj._VE) as e:
+            f(parser, r("BRS/FNC 1000/1100"))
+        self.assertEqual(e.exception.code, efj._VE.Code.MISSING_AIRCRAFT)
+        parser.date = None
+        parser.aircraft = efj.Aircraft("G-ABCD", "A320", "")
+        with self.assertRaises(efj._VE) as e:
+            f(parser, r("BRS/FNC 1000/1100"))
+        self.assertEqual(e.exception.code, efj._VE.Code.MISSING_DATE)
+        parser.date = dt.date(2025, 1, 1)
+        parser.airports = efj.Airports("", "FNC")
+        with self.assertRaises(efj._VE) as e:
+            f(parser, r("/ 1000/1100"))
+        self.assertEqual(e.exception.code, efj._VE.Code.MISSING_DEST)
+        parser.airports = efj.Airports("BRS", "")
+        with self.assertRaises(efj._VE) as e:
+            f(parser, r("/ 1000/1100"))
+        self.assertEqual(e.exception.code, efj._VE.Code.MISSING_ORIGIN)
+        with self.assertRaises(efj._VE) as e:
+            f(parser, r("BRS/FNC 1000/1100 n:a"))
+        self.assertEqual(e.exception.code, efj._VE.Code.BAD_FLAGS)
+        with self.assertRaises(efj._VE) as e:
+            f(parser, r("BRS/FNC 1000/1100 p1s"))
+        self.assertEqual(e.exception.code, efj._VE.Code.MISSING_CAPTAIN)
+        # successful parse
+        self.assertEqual(f(parser, r("BRS/FNC 1000/1100")), default_sector)
+        self.assertEqual(
+            f(parser, r("/BHX 1000/1100")),
+            default_sector._replace(airports=efj.Airports("FNC", "BHX")))
+        self.assertEqual(
+            f(parser, r("/ 1000/1100")),
+            default_sector._replace(airports=efj.Airports("BHX", "FNC")))
+        self.assertEqual(f(parser, r("BRS/FNC 1000/1100#test comment")),
+                         default_sector._replace(comment="test comment"))
+        parser.crewlist = [efj.Crewmember(role="cp", name="bloggs"),]
+        self.assertEqual(f(parser, r("BRS/FNC 1000/1100 p1s v n")),
+                         default_sector._replace(
+                             roles=efj.Roles(p1=0, p1s=60),
+                             landings=efj.Landings(day=0, night=1),
+                             captain="bloggs",
+                             crew=(efj.Crewmember("cp", "bloggs"),),
+                             conditions=efj.Conditions(night=60)))

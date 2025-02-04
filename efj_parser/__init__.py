@@ -246,7 +246,7 @@ class Parser():
         captains = ["Self"] if roles.p1 else []
         if roles.p1 < duration:
             for m in self.crewlist:
-                if m.role == "CP":
+                if m.role.upper() == "CP":
                     captains.append(m.name)
         return ", ".join(captains)
 
@@ -262,9 +262,9 @@ class Parser():
             dest or self.airports.origin
         )
         if not self.airports.origin:
-            raise _VE(_VE.Code.MISSING_DEST)
-        if not self.airports.dest:
             raise _VE(_VE.Code.MISSING_ORIGIN)
+        if not self.airports.dest:
+            raise _VE(_VE.Code.MISSING_DEST)
         start, duration = self.__parse_times(start_str, end_str)
         try:
             flags = _split_flags(flag_str)
