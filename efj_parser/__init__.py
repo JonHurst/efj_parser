@@ -166,6 +166,7 @@ class Parser():
         return self.date
 
     def __parse_duty(self, mo: re.Match) -> Duty:
+        assert mo
         if not self.date:
             raise _VE(_VE.Code.MISSING_DATE)
         start_str, end_str, flags, comment = (

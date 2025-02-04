@@ -633,3 +633,33 @@ class TestPrivateMethods(unittest.TestCase):
         if __debug__:
             with self.assertRaises(AssertionError):
                 efj.Parser._Parser__parse_nextdate(parser, None)
+
+    def test_duty(self):
+        parser = efj.Parser()
+        parser.date = dt.date(2024, 12, 31)
+        mo = efj.Parser._Parser__RE_DUTY.fullmatch("1000/1100")
+        res = efj.Parser._Parser__parse_duty(parser, mo)
+        expected = efj.Duty(dt.datetime(2024, 12, 31, 10, 0), 60)
+        self.assertEqual(res, expected)
+        mo = efj.Parser._Parser__RE_DUTY.fullmatch("1000/1100 r:30")
+        res = efj.Parser._Parser__parse_duty(parser, mo)
+        expected = expected._replace(ftl_correction=30)
+        self.assertEqual(res, expected)
+        mo = efj.Parser._Parser__RE_DUTY.fullmatch("1000/1100 r")
+        res = efj.Parser._Parser__parse_duty(parser, mo)
+        expected = expected._replace(ftl_correction=60)
+        self.assertEqual(res, expected)
+        mo = efj.Parser._Parser__RE_DUTY.fullmatch(
+            "1000/1100 r t1 t2:10 # comment")
+        res = efj.Parser._Parser__parse_duty(parser, mo)
+        expected = expected._replace(
+            extra_flags=("t1", "t2:10"), comment="comment")
+        self.assertEqual(res, expected)
+        mo = efj.Parser._Parser__RE_DUTY.fullmatch("1000/1100#comment")
+        res = efj.Parser._Parser__parse_duty(parser, mo)
+        expected = efj.Duty(
+            dt.datetime(2024, 12, 31, 10, 0), 60, 0, (), "comment")
+        self.assertEqual(res, expected)
+        if __debug__:
+            with self.assertRaises(AssertionError):
+                efj.Parser._Parser__parse_duty(parser, None)
