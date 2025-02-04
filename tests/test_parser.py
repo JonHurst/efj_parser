@@ -581,28 +581,28 @@ class TestUtility(unittest.TestCase):
 
 class TestPrivateMethods(unittest.TestCase):
 
-    def test_parse_sector_times(self):
+    def test_parse_times(self):
         parser = efj.Parser()
         if __debug__:
             with self.assertRaises(AssertionError) as e:
-                efj.Parser._Parser__parse_sector_times(parser, "1000", "1100")
+                efj.Parser._Parser__parse_times(parser, "1000", "1100")
         parser.date = dt.date(2025, 1, 1)
-        ret = efj.Parser._Parser__parse_sector_times(parser, "1000", "1100")
+        ret = efj.Parser._Parser__parse_times(parser, "1000", "1100")
         self.assertEqual(ret, (dt.datetime(2025, 1, 1, 10, 0), 60))
-        ret = efj.Parser._Parser__parse_sector_times(parser, "2300", "0100")
+        ret = efj.Parser._Parser__parse_times(parser, "2300", "0100")
         self.assertEqual(ret, (dt.datetime(2025, 1, 1, 23, 0), 120))
         with self.assertRaises(efj._VE) as e:
-            efj.Parser._Parser__parse_sector_times(parser, "1000", "3100")
+            efj.Parser._Parser__parse_times(parser, "1000", "3100")
         self.assertEqual(e.exception.code, efj._VE.Code.BAD_TIME)
         if __debug__:
             with self.assertRaises(AssertionError) as e:
-                efj.Parser._Parser__parse_sector_times(parser, "abcd", "1100")
+                efj.Parser._Parser__parse_times(parser, "abcd", "1100")
             with self.assertRaises(AssertionError) as e:
-                efj.Parser._Parser__parse_sector_times(parser, None, "1100")
+                efj.Parser._Parser__parse_times(parser, None, "1100")
         if not __debug__:
             with self.assertRaises(efj._VE) as e:
-                efj.Parser._Parser__parse_sector_times(parser, "abcd", "1100")
+                efj.Parser._Parser__parse_times(parser, "abcd", "1100")
             self.assertEqual(e.exception.code, efj._VE.Code.BAD_TIME)
             with self.assertRaises(efj._VE) as e:
-                efj.Parser._Parser__parse_sector_times(parser, None, "1100")
+                efj.Parser._Parser__parse_times(parser, None, "1100")
             self.assertEqual(e.exception.code, efj._VE.Code.BAD_TIME)

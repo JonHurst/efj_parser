@@ -168,16 +168,7 @@ class Parser():
             raise _VE(_VE.Code.MISSING_DATE)
         start_str, end_str, flags, comment = (
             X.strip() if X else "" for X in mo.group(1, 2, 3, 4))
-        try:
-            t_start = dt.time.fromisoformat(start_str)
-            t_end = dt.time.fromisoformat(end_str)
-        except ValueError:
-            raise _VE(_VE.Code.BAD_TIME)
-        dt_start = dt.datetime.combine(self.date, t_start)
-        duration = ((t_end.hour - t_start.hour) * 60 +
-                    (t_end.minute - t_start.minute))
-        if duration < 0:
-            duration += 1440
+        dt_start, duration = self.__parse_times(start_str, end_str)
         ftl_correction = 0
         unused_flags = []
         for f in _split_flags(flags):
@@ -217,10 +208,11 @@ class Parser():
             raise _VE(_VE.Code.BAD_CREWLIST)
         return self.crewlist
 
-    def __parse_sector_times(
+    def __parse_times(
             self, t_start: str, t_end: str
     ) -> tuple[dt.datetime, int]:
         assert self.date
+        assert t_start and t_end
         assert t_start.isnumeric() and t_end.isnumeric()
         try:
             ts = dt.time.fromisoformat(t_start)  # Off blocks
@@ -269,7 +261,7 @@ class Parser():
             raise _VE(_VE.Code.MISSING_DEST)
         if not self.airports.dest:
             raise _VE(_VE.Code.MISSING_ORIGIN)
-        start, duration = self.__parse_sector_times(start_str, end_str)
+        start, duration = self.__parse_times(start_str, end_str)
         try:
             flags = _split_flags(flag_str)
         except ValueError:
