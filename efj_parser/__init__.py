@@ -101,7 +101,7 @@ class _VE(Exception):
         Code.BAD_SYNTAX: "Invalid syntax",
         Code.BAD_TIME: "Invalid time format",
         Code.MISSING_AIRCRAFT: "Prior aircraft specifier required",
-        Code.MISSING_AIRCRAFT: "No Captain specified",
+        Code.MISSING_CAPTAIN: "No Captain specified",
         Code.MISSING_DATE: "Prior date specifier required",
         Code.MISSING_DEST: "No destination airfield specified",
         Code.MISSING_ORIGIN: "No origin airfield specified",

@@ -413,6 +413,13 @@ BRS/BFS 1100/1200 v n:30
                 str(e.exception),
                 "Line 2: [Invalid syntax] 2200-2400")
 
+    def test_missing_captain(self):
+        with self.assertRaises(efj.ValidationError) as e:
+            efj.Parser().parse("2024-01-21\nG-ABCD:320\nBRS/BFS 1100/1200 p2")
+        self.assertEqual(
+            str(e.exception),
+            "Line 3: [No Captain specified] BRS/BFS 1100/1200 p2")
+
 
 class TestSectorFlags (unittest.TestCase):
 
