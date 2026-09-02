@@ -235,11 +235,10 @@ class Parser():
     ) -> tuple[Conditions, Roles, Landings, Flags]:
         conditions, unused_flags = _process_conditions(flags, duration)
         roles, unused_flags = _process_roles(unused_flags, duration)
+        landings, unused_flags = _process_landings(unused_flags, duration,
+                                                   conditions.night)
         if roles.p2 == duration:
             landings = Landings()
-        else:
-            landings, unused_flags = _process_landings(unused_flags, duration,
-                                                       conditions.night)
         return conditions, roles, landings, unused_flags
 
     def __captain(self, roles, duration) -> str:
@@ -363,21 +362,23 @@ def _process_landings(
         night: int
 ) -> tuple[Landings, Flags]:
     night_ldg, day_ldg = 0, 0
-    found_landing_flag = False
+    m_flag, ldg_flag = False, False
     unused: list[Flag] = []
     for f in flags:
         match f[0]:
             case "m":
-                found_landing_flag = True
+                m_flag = True
             case "ld":
-                day_ldg += 1 if f[1] is None else f[1]
-                found_landing_flag = True
+                day_ldg += (1 if f[1] is None else f[1])
+                ldg_flag = True
             case "ln":
-                night_ldg += 1 if f[1] is None else f[1]
-                found_landing_flag = True
+                night_ldg += (1 if f[1] is None else f[1])
+                ldg_flag = True
             case _:
                 unused.append(f)
-    if not found_landing_flag:
+    if m_flag:  # m flag is like p2 flag for captains
+        night_ldg, day_ldg = 0, 0
+    elif not ldg_flag:
         if duration == night:
             night_ldg = 1
         else:

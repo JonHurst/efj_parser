@@ -149,6 +149,7 @@ N2:320
 OB-T-1274:A-321
 /NCE 1100/1300 ld:3
 / 1340/1540 v:30 n:10 ln
+/ 1700/1800 n ln:2 m
 
 ++
 0600/1200 r:60 test # ESBY
@@ -204,6 +205,14 @@ OB-T-1274:A-321
                 efj.Landings(night=1),
                 efj.Aircraft("OB-T-1274", "A-321", ""),
                 efj.Airports("NCE", "BRS"),
+                "Self", (), "", ()),
+            efj.Sector(
+                dt.datetime(2024, 1, 22, 17, 0), 60,
+                efj.Roles(p1=60),
+                efj.Conditions(night=60, ifr=60),
+                efj.Landings(day=0, night=0),
+                efj.Aircraft("OB-T-1274", "A-321", ""),
+                efj.Airports("BRS", "NCE"),
                 "Self", (), "", ()))
         self.assertEqual(
             efj.Parser().parse(data),
@@ -217,7 +226,7 @@ G-ABCD:320
 {CP:Bloggs Joe}
 # A general comment about something
 BRS/BFS 1100/1200 p1s #belfast
-/ 1300/1400 p2
+/ 1300/1400 p2 ld:2
 
 +++
 1000/1610  # Comment
@@ -477,6 +486,11 @@ class TestSectorFlags (unittest.TestCase):
             self.assertEqual(
                 efj._process_landings((("ld", None),), 2, 2),
                 (efj.Landings(day=1, night=0), ()))
+        with self.subTest("Night landing, PM"):
+            # m overrides ln flag
+            self.assertEqual(
+                efj._process_landings((("ln", None), ("m", None)), 2, 1),
+                (efj.Landings(day=0, night=0), ()))
 
     def test_roles(self):
         with self.subTest("All p1"):

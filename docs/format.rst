@@ -244,8 +244,9 @@ landing. To specify multiple landings use a colon followed by an integer, i.e.
 is equivalent to ``ln:1``. Both flags may be specified. ``ld:2 ln`` means two
 day landings and one night landing.
 
-If none of these flags are used and the entire flight was operated under a
-``p2`` flag, no landing will be logged.
+If the ``m`` flag is present or the the entire flight was operated under a
+``p2`` role flag, no landing will be logged, regardless of any ``ld`` or ``ln``
+flags that may be present.
 
 Otherwise, if none of the flags are used, a single day landing is assumed if a
 flight took place entirely in daytime and a single night landing is assumed if
@@ -264,6 +265,7 @@ Examples: ::
   EMA/EMA 1000/1100  # 1 day landing assumed
   EMA/EMA 1000/1100 m  # PM: No landing to be recorded
   EMA/EMA 1000/1100 p2  # P2: No landing to be recorded
+  EMA/EMA 1000/1100 ld p2  # No landing to be recorded (p2 overrides ld)
   EMA/EMA 2200/2300 n  # 1 night landing assumed
   EMA/FNC 0600/0900 n:60  # 1 day landing assumed
   FNC/EMA 1800/2100 n:120 ln  # 1 night landing (ln must be specified)
@@ -271,6 +273,7 @@ Examples: ::
   EMA/EMA 2100/2300 n:60 ld:5 ln:4  # 5 day circuits then 4 night circuits
   EMA/EMA 1000/1300 ins ld:10  # 10 day landings as instructor
   EMA/FNC 1000/1300 ld:0  # Zero landings for some reason
+  FNC/EMA 1800/2100 n:120 ln m # No landing to be recorded (m overrides ln)
 
 
 Unknown flags
