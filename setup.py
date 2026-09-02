@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="efj-parser",
-    version="0.9.5",
+    version="1.0",
     author="Jon Hurst",
     author_email="jon.a@hursts.org.uk",
     description="Parse an electronic Flight Journal file",
@@ -15,7 +15,7 @@ setuptools.setup(
     packages=['efj_parser'],
     package_data={"efj_parser": ["py.typed"]},
     classifiers=[
-        "Development Status :: 4 - Beta",
+        "Development Status :: 5 - Production/Stable",
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: "
         "GNU General Public License v3 or later (GPLv3+)",
