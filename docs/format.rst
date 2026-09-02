@@ -244,7 +244,7 @@ landing. To specify multiple landings use a colon followed by an integer, i.e.
 is equivalent to ``ln:1``. Both flags may be specified. ``ld:2 ln`` means two
 day landings and one night landing.
 
-If the ``m`` flag is present or the the entire flight was operated under a
+If the ``m`` flag is present or if the entire flight was operated under a
 ``p2`` role flag, no landing will be logged, regardless of any ``ld`` or ``ln``
 flags that may be present.
 
