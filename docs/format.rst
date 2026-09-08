@@ -10,9 +10,9 @@ moment how you might efficiently record your flying records in a pocket diary,
 you will likely come up with a paper based version of the scheme. It is a
 useful, human readable, format in and of itself, plus, using this parser, it is
 easy to generate other formats, including FCL.050 compliant logbooks — I have
-`provided a tool <https://hursts.org.uk/efjtkdocs>`_ (with an `online version
-<https://hursts.org.uk/efj/>`_ for those who prefer) that includes the ability
-to do just this.
+provided a tool, with a choice of `locally installable CLI and GUI
+versions </efjtkdocs/install.html>`_ and a `web version </efj/>`_, that includes
+the ability to do just this.
 
 Since an eFJ is just a text file, it can be maintained with any of the myriad
 text editors that are available on each and every platform. There is zero
@@ -41,9 +41,10 @@ It is straightforward to enter this data manually, and there is assistance for
 this in the form of short forms, such as that the next day in a sequence can be
 represented by a ``+``, and functionality of the above mentioned tool, that
 includes expansion of these short forms and night flying calculations. For
-easyJet pilots `there is also a tool <https://hursts.org.uk/aimsdocs>`_ (again
-with `an online version <https://hursts.org.uk/aims/>`_) that can extract the
-majority of this data from a downloaded AIMS roster.
+easyJet pilots I have provided a tool (again with `locally installable CLI and
+GUI options </aimsdocs/installation.html>`_ and a `web version </aims/>`_) that
+can extract the majority of this data from a downloaded AIMS “vertical” roster
+or pilot logbook report.
 
 
 Top Level Structure
@@ -207,9 +208,9 @@ representing the entire duration of the flight, e.g. for a 60 minute flight,
 indicate the nature of the flying, and this will be included in the extra_flags
 field of the sector to enable specialised processing.
 
-Any minutes not assigned as ``p1s``, ``p2`` and/or ``put``, are assumed to be
-operated as p1, so Captains just need to omit these flags. The ``ins`` flag is
-for recording that you were operating as an instructor.
+Any minutes not assigned as ``p1s``, ``p2``, ``put`` and/or ``p0``, are assumed
+to be operated as p1, so Captains just need to omit these flags. The ``ins``
+flag is for recording that you were operating as an instructor.
 
 Examples: ::
 
@@ -244,9 +245,8 @@ landing. To specify multiple landings use a colon followed by an integer, i.e.
 is equivalent to ``ln:1``. Both flags may be specified. ``ld:2 ln`` means two
 day landings and one night landing.
 
-If the ``m`` flag is present or if the entire flight was operated under a
-``p2`` role flag, no landing will be logged, regardless of any ``ld`` or ``ln``
-flags that may be present.
+If the ``m`` flag is present no landing will be logged, regardless of any ``ld``
+or ``ln`` flags that may be present.
 
 Otherwise, if none of the flags are used, a single day landing is assumed if a
 flight took place entirely in daytime and a single night landing is assumed if
@@ -254,25 +254,20 @@ a flight took place entirely at night. If only part of the flight took place at
 night, a day landing is assumed. Thus an ``ln`` flag must be used if part of a
 flight took place at night and the landing was a night landing.
 
-No check is made for reasonableness. If an ``ld`` flag is used when the flight
-took place entirely at night, one day landing will still be recorded.
-
-To specify that you were not involved in the landing, use either ``ld:0``,
-``ln:0`` or ``m`` as you see fit.
+No check is made for reasonableness, and no account is taken of pilot role.
 
 Examples: ::
 
   EMA/EMA 1000/1100  # 1 day landing assumed
   EMA/EMA 1000/1100 m  # PM: No landing to be recorded
-  EMA/EMA 1000/1100 p2  # P2: No landing to be recorded
-  EMA/EMA 1000/1100 ld p2  # No landing to be recorded (p2 overrides ld)
+  EMA/EMA 1000/1100 p2  # 1 day landing assumed
+  EMA/EMA 1000/1100 p2 m  # No landing recorded (usually need m with p2)
   EMA/EMA 2200/2300 n  # 1 night landing assumed
   EMA/FNC 0600/0900 n:60  # 1 day landing assumed
   FNC/EMA 1800/2100 n:120 ln  # 1 night landing (ln must be specified)
   EMA/EMA 1000/1100 put ld:5  # 5 training circuits
   EMA/EMA 2100/2300 n:60 ld:5 ln:4  # 5 day circuits then 4 night circuits
   EMA/EMA 1000/1300 ins ld:10  # 10 day landings as instructor
-  EMA/FNC 1000/1300 ld:0  # Zero landings for some reason
   FNC/EMA 1800/2100 n:120 ln m # No landing to be recorded (m overrides ln)
 
 
