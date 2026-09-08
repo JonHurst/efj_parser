@@ -14,7 +14,7 @@ then
     exit 2
 fi
 
-pyflakes3 efj_parser tests
+pyflakes efj_parser tests
 if [ $? -ne "0" ]
 then
     exit 3

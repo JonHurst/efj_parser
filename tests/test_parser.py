@@ -143,11 +143,13 @@ N1:320: mc
 BRS/BFS 1100/1200 ins #belfast
 N2:320
 / 1300/1400 ins:20 test
+{CP: Bloggs}
+/ 1600/1700 p0 spo
 {}
 +
 1000/1610  # Comment
 OB-T-1274:A-321
-/NCE 1100/1300 ld:3
+BRS/NCE 1100/1300 ld:3
 / 1340/1540 v:30 n:10 ln
 / 1700/1800 n ln:2 m
 
@@ -191,6 +193,15 @@ OB-T-1274:A-321
                 "Self", ("test",), "",
                 (efj.Crewmember("FO", "Bloggs"),)),
             efj.Sector(
+                dt.datetime(2024, 1, 21, 16), 60,
+                efj.Roles(p0=60),
+                efj.Conditions(ifr=60),
+                efj.Landings(day=1),
+                efj.Aircraft("N2", "320", "mc"),
+                efj.Airports("BRS", "BFS"),
+                "Bloggs", ("spo",), "",
+                (efj.Crewmember("CP", "Bloggs"),)),
+            efj.Sector(
                 dt.datetime(2024, 1, 22, 11), 120,
                 efj.Roles(p1=120),
                 efj.Conditions(ifr=120),
@@ -226,13 +237,13 @@ G-ABCD:320
 {CP:Bloggs Joe}
 # A general comment about something
 BRS/BFS 1100/1200 p1s #belfast
-/ 1300/1400 p2 ld:2
+/ 1300/1400 p2 m ld:2
 
 +++
 1000/1610  # Comment
 {CP:Pugwash, PU:Purser}
 G-EFGH:321
-/NCE 1100/1300 p2
+/NCE 1100/1300 p2 m
 / 1340/1540 p1s:30
 """
         expected_duties = (

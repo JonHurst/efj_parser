@@ -23,6 +23,7 @@ class Roles(NamedTuple):
     p2: int = 0  #: Minutes operating as p2
     put: int = 0  #: Minutes operating as put
     instructor: int = 0  #: Minutes operating as instructor
+    p0: int = 0  #: Minutes assigned to p0
 
 
 class Conditions(NamedTuple):
@@ -237,8 +238,6 @@ class Parser():
         roles, unused_flags = _process_roles(unused_flags, duration)
         landings, unused_flags = _process_landings(unused_flags, duration,
                                                    conditions.night)
-        if roles.p2 == duration:
-            landings = Landings()
         return conditions, roles, landings, unused_flags
 
     def __captain(self, roles, duration) -> str:
@@ -415,7 +414,7 @@ def _process_roles(flags: Flags, duration: int) -> tuple[Roles, Flags]:
     p1 = duration - (p1s + p2 + put + p0)
     if p1 < 0:
         raise _VE(_VE.Code.BAD_ROLE_FLAGS)
-    return Roles(p1, p1s, p2, put, ins), tuple(unused)
+    return Roles(p1, p1s, p2, put, ins, p0), tuple(unused)
 
 
 def _process_conditions(flags: Flags, dur: int) -> tuple[Conditions, Flags]:

@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="efj-parser",
-    version="1.0",
+    version="2.0",
     author="Jon Hurst",
     author_email="jon.a@hursts.org.uk",
     description="Parse an electronic Flight Journal file",
