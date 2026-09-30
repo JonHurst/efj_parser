@@ -5,19 +5,7 @@ Overview
 --------
 
 An electronic Flight Journal (eFJ) is a simple text file within which your
-flying records are stored in an intuitive non-tabular form. If you ponder for a
-moment how you might efficiently record your flying records in a pocket diary,
-you will likely come up with a paper based version of the scheme. It is a
-useful, human readable, format in and of itself, plus, using this parser, it is
-easy to generate other formats, including FCL.050 compliant logbooks — I have
-provided a tool, with a choice of `locally installable CLI and GUI
-versions </efjtkdocs/install.html>`_ and a `web version </efj/>`_, that includes
-the ability to do just this.
-
-Since an eFJ is just a text file, it can be maintained with any of the myriad
-text editors that are available on each and every platform. There is zero
-probability that the file will become unusable in the future as a result of a
-tech company losing interest in maintaining a particular bit of software.
+flying records are stored in an intuitive "journal" schema.
 
 A minimal entry for a couple of days of flying by a Captain looks like this: ::
 
@@ -31,20 +19,6 @@ A minimal entry for a couple of days of flying by a Captain looks like this: ::
       G-UZHI:A320
       BRS/FNC 0708/1045 n:6
       FNC/BRS 1127/1451 m
-
-This should hopefully be pretty self-explanatory, with the exception of the
-``n:18`` flag, which means that 18 minutes of the flight occurred in regulatory
-night time, and the ``m`` which means that the Captain was operating as Pilot
-Monitoring and should not therefore log the landing.
-
-It is straightforward to enter this data manually, and there is assistance for
-this in the form of short forms, such as that the next day in a sequence can be
-represented by a ``+``, and functionality of the above mentioned tool, that
-includes expansion of these short forms and night flying calculations. For
-easyJet pilots I have provided a tool (again with `locally installable CLI and
-GUI options </aimsdocs/installation.html>`_ and a `web version </aims/>`_) that
-can extract the majority of this data from a downloaded AIMS “vertical” roster
-or pilot logbook report.
 
 
 Top Level Structure
