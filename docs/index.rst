@@ -6,7 +6,7 @@ eFJ Parser
    :maxdepth: 3
    :caption: Contents:
 
-   format
+   schema
    parser
    data_structures
    exceptions

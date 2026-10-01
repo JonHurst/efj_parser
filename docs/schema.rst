@@ -1,13 +1,13 @@
-eFJ Format Description
+eFJ Schema Description
 ======================
 
 Overview
 --------
 
-An electronic Flight Journal (eFJ) is a simple text file within which your
-flying records are stored in an intuitive "journal" schema.
+An electronic Flight Journal (eFJ) file is a text file within which your flying
+records are stored using an intuitive, journal-like, schema.
 
-A minimal entry for a couple of days of flying by a Captain looks like this: ::
+As an example, a couple of days of flying by a Captain looks like this: ::
 
       2024-02-04
       G-EZBY:A319
@@ -25,7 +25,7 @@ Top Level Structure
 -------------------
 
 Blank lines and lines starting with ``#`` are ignored to allow spacing and
-comments as desired.
+full line comments as desired.
 
 Otherwise, each line must be one of a:
 
